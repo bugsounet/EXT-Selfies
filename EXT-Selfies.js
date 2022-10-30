@@ -1,6 +1,6 @@
 /* eslint-disable eqeqeq */
 /* eslint-disable prettier/prettier */
-Module.register("MMM-Selfieshot", {
+Module.register("EXT-Selfies", {
 	defaults: {
 		debug: false,
 		storePath: "./photos",
@@ -46,7 +46,7 @@ Module.register("MMM-Selfieshot", {
 	},
 
 	getStyles: function() {
-		return ["MMM-Selfieshot.css", "font-awesome.css"];
+		return ["EXT-Selfies.css", "font-awesome.css"];
 	},
 
 	getCommands: function(commander) {
