@@ -6,8 +6,6 @@ const NodeWebcam = require( "node-webcam" );
 const moment = require("moment");
 const path = require("path");
 const exec = require("child_process").exec;
-var nodemailer = require("nodemailer");
-const bodyParser = require("body-parser");
 
 var log = () => { /* do nothing */ };
 
@@ -20,6 +18,7 @@ module.exports = NodeHelper.create({
   },
 
   initialize: function(payload) {
+    console.log("[SELFIES] EXT-Selfies Version:", require('./package.json').version, "rev:", require('./package.json').rev)
     this.config = payload
     if (payload.debug) {
       log = (...args) => { console.log("[SELFIES]", ...args) }
