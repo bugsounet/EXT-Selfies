@@ -1,6 +1,8 @@
-/**
- * @todo set default camera
-**/
+/********************
+*  EXT-Selfies v1.0 *
+*  Bugsounet        *
+*  10/2022          *
+********************/
 
 const NodeWebcam = require( "node-webcam" );
 const moment = require("moment");

@@ -1,8 +1,12 @@
+/********************
+*  EXT-Selfies v1.0 *
+*  Bugsounet        *
+*  10/2022          *
+********************/
 
 Module.register("EXT-Selfies", {
   defaults: {
     debug: false,
-    storePath: "./photos",
     width:1280,
     height:720, // In some webcams, resolution ratio might be fixed so these values might not be applied.
     device: null, // For default camera. Or,
@@ -108,7 +112,7 @@ Module.register("EXT-Selfies", {
     var shutter = document.createElement("audio")
     shutter.classList.add("shutter")
     if (this.config.playShutter) {
-      shutter.src = "modules/EXT-Selfies/" + this.config.shutterSound
+      shutter.src = "modules/EXT-Selfies/resources/" + this.config.shutterSound
     }
     dom.appendChild(shutter)
 
