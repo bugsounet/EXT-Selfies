@@ -14,6 +14,9 @@ Module.register("EXT-Selfies", {
     shootMessage: "Smile!",
     shootCountdown: 5,
     displayButton: true,
+    buttonStyle: ["1"], // Set "1", "2", "3", "4", "5" ------> or ["1", "3,"5"]
+    updateInterval: 7 * 1000, // *
+    animationSpeed: 3000,
     playShutter: true,
     shutterSound: "shutter.mp3",
     resultDuration: 1000 * 10,
@@ -78,17 +81,37 @@ Module.register("EXT-Selfies", {
     this.session = {}
     this.sendSocketNotification("INIT", this.config)
     this.lastPhoto = null
+    this.logoSelfies = this.buttonsUrls
+    this.logoValidate = this.file("resources/validate.png")
+    this.logoExit = this.file("resources/exit.png")
+    this.logoRetry = this.file("resources/retry.png")
+    var getTimeStamp = new Date()
+    if (this.config.buttonStyle != '') {
+      this.logoSelfies = this.buttonUrls[this.config.buttonStyle];
+    }
+    self = this    
+    setInterval(function() {
+      self.updateDom(self.config.animationSpeed || 0); // use config.animationSpeed or revert to zero @ninjabreadman
+    }, this.config.updateInterval);
+    this.url = '';
+    this.buttonUrls = {
+      "1": 'resources/master.png',
+      "2": 'resources/halloween.png',
+      "3": 'resources/birthday.png',
+      "4": 'resources/christmas.png'
+    }
   },
 
   getDom: function() {
-    var wrapper = document.createElement("div")
     if (this.config.displayButton) {
-      var img = document.createElement("span")
-      img.className = "fa fa-camera"
-      img.classList.add("large")
-      var session = {}
-      img.addEventListener("click", () => this.shoot(this.config, session))
-      wrapper.appendChild(img)
+      var wrapper = document.createElement("div")
+      var icon = document.createElement("div")
+			icon.id = "EXT-SELFIE-BUTTON"
+			icon.style.backgroundImage = "url("+this.logoSelfies + "?seed=" + getTimeStamp+")"
+			icon.classList.add("flash")
+			var session = {}
+			icon.addEventListener("click", () => this.shoot(this.config, session))
+			wrapper.appendChild(icon)
     } else wrapper.style.display = 'none'
     return wrapper
   },
@@ -116,6 +139,24 @@ Module.register("EXT-Selfies", {
     }
     dom.appendChild(shutter)
 
+    var validateIcon = document.createElement("div")
+    validateIcon.id = "EXT-SELFIE-VALIDATE"
+    validateIcon.classList.add("hidden")
+
+    dom.appendChild(validateIcon)
+
+    var retryIcon = document.createElemente("div")
+    retryIcon.id = "EXT-SELFIE-RETRY"
+    retryIcon.classList.add("hidden")
+
+    dom.appendChild(retryIcon)
+
+    var exitIcon = document.createElement("div")
+    exitIcon.id = "EXT-SELFIE-EXIT"
+    exitIcon.classList.add("hidden")
+
+    dom.appendChild(exitIcon)
+    
     var result = document.createElement("result")
     result.classList.add("result")
 
@@ -244,7 +285,17 @@ Module.register("EXT-Selfies", {
     var rd = document.querySelector("#EXT-SELFIES .result")
     rd.style.backgroundImage = `url(modules/EXT-Selfies/photos/${result.uri})`
 
+    wrapper.style.background
     rd.classList.toggle("shown")
+    var validateIcon = document.querySelector("#EXT-SELFIE-VALIDATE .shown")
+    validateIcon.style.backgroundImage = "url("+this.logoValidate+")"
+    validateIcon.addEventListener("click", () => this.sendMail(data))
+    var retryIcon = document.querySelector("#EXT-SELFIE-RETRY .shown")
+    retryIcon.style.backgroundImage = "url("+this.logoRetry+")"
+    retryIcon.addEventListener("click", () => delete this.session [result.session.key] && this.shoot(this.config(session)))
+    var exitIcon = document.querySelector("EXT-SELFIE-EXIT .shown")
+    exitIcon.style.backgroundImage = "url("+this.logoExit+")"
+    exitIcon.addEventListener("click", () => this.sendNotification("EXT_SELFIES-END")
     setTimeout(()=>{
       rd.classList.toggle("shown")
       con.classList.toggle("shown")

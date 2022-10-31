@@ -34,19 +34,34 @@
 }
 
 #EXT-SELFIES .message {
-  font-size: 30px;
-  font-weight:bold;
-  color: #FFF;
-  height:60px;
-}
+    font-family: cursive, 'Pacifico';
+    font-size: 30px;
+    font-weight:bold;
+    color: #37f713;
+    text-shadow:
+      0 0 7px #37f713,
+      0 0 10px #37f713,
+      0 0 21px #37f713,
+      0 0 42px #37f713,
+      0 0 82px #0fa,
+      0 0 92px #0fa,
+      0 0 102px #0fa;
+    height:60px;
+  }
 
-#EXT-SELFIES .count {
-  font-size:240px;
-  font-weight:bold;
-  color:#FFF;
-  height: 240px;
-  line-height:100%;
-}
+  #EXT-SELFIES .count {
+    font-family: cursive, 'Pacifico';
+    font-size:180px;
+    font-weight:bold;
+    color:#37f713;
+    text-shadow:
+      0 0 7px #37f713,
+      0 0 10px #37f713,
+      0 0 21px #37f713,
+      0 0 42px #0fa,;
+    height: 200px;
+    line-height: 80%;
+  }
 
 #EXT-SELFIES .result {
   position: absolute;
@@ -63,4 +78,76 @@
 
 #EXT-SELFIES .result.shown {
   display:block;
+}
+
+#EXT-SELFIE-BUTTON .hidden {
+  display: none
+}
+
+#EXT-SELFIE-BUTTON {
+  background-size: 100%;
+  width: 500px;
+  height: 502px;
+  margin-left: 250px;
+}
+
+#EXT-SELFIE-BUTTON .flash {
+opacity: 1;
+animation: flash normal 2.2s infinite ease-in;
+}
+
+@keyframes flash {
+0% {
+    opacity:1;
+}
+50% {
+    opacity:0;
+}
+100% {
+    opacity:1;
+}
+}
+#EXT-SELFIE-RETRY .hidden {
+display: none;
+}
+
+#EXT-SELFIE-RETRY {
+  background-size: 100%;
+  width: 400px;
+  height: 402px;
+  margin-left: 20px;
+}
+
+#EXT-SELFIE-RETRY .shown {
+  display: bloc;
+}
+
+#EXT-SELFIE-VALIDATE .hidden {
+  display: none;
+}
+
+#EXT-SELFIE-VALIDATE {
+  background-size: 100%;
+  width: 400px;
+  height: 402px;
+  margin-right: 20px;
+}
+
+#EXT-SELFIE-VALIDATE .shown{
+  display: bloc;
+}
+
+#EXT-SELFIE-EXIT .hidden {
+display: none;
+}
+
+#EXT-SELFIE-EXIT {
+  background-size: 100%;
+  width: 400px;
+  height: 402px;
+  margin-left: 250px;
+}
+
+#EXT-SELFIE-EXIT .shown{
+  display: bloc;
 }
