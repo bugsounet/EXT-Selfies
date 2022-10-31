@@ -4,6 +4,7 @@
 
 const NodeWebcam = require( "node-webcam" );
 const moment = require("moment");
+const fs = require("fs");
 const path = require("path");
 const exec = require("child_process").exec;
 
@@ -52,16 +53,16 @@ module.exports = NodeHelper.create({
     if (payload.debug) log("Notification received: " + noti)
     if (noti == "INIT") this.initialize(payload)
     if (noti == "SHOOT") {
-      console.log('shoot payload:', payload)
+      log('Shoot payload:', payload)
       this.shoot(payload)
     }
     if (noti == "EMPTY") {
       var dir = path.resolve(__dirname, "photos")
       exec(`rm ${dir}/*.jpg`, (err, sto, ste)=>{
         log("Cleaning directory:", dir)
-        if (err) this.log("Error:", err)
-        if (sto) this.log(sto)
-        if (ste) this.log(ste)
+        if (err) console.error("[SELFIES] Cleaning directory Error:", err)
+        if (sto) log("stdOut:", sto)
+        if (ste) log("stdErr:", ste)
       })
     }
   },
@@ -72,7 +73,7 @@ module.exports = NodeHelper.create({
     var opts = Object.assign ({
       width: this.config.width,
       height: this.config.height,
-      quality: this.config.quality,
+      quality: 100,
       delay: 0,
       saveShots: true,
       output: "jpeg",
@@ -81,7 +82,11 @@ module.exports = NodeHelper.create({
       verbose: this.config.debug
     }, (payload.options) ? payload.options : {})
     NodeWebcam.capture(filename, opts, (err, data)=>{
-      if (err) log("Error:", err)
+      if (err || !fs.existsSync(data)) {
+        console.error("[SELFIES] Capture Error!", err ? err : "")
+        this.sendSocketNotification("ERROR", "Webcam Capture Error!")
+        return
+      }
       log("Photo is taken:", data)
       this.sendSocketNotification("SHOOT_RESULT", {
         path: data,

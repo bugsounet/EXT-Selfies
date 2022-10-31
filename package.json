@@ -23,6 +23,6 @@
   },
   "homepage": "https://wiki.bugsounet.fr",
   "dependencies": {
-    "node-webcam": "^0.5.0"
+    "node-webcam": "^0.8.1"
   }
 }
