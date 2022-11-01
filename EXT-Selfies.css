@@ -34,34 +34,34 @@
 }
 
 #EXT-SELFIES .message {
-    font-family: cursive, 'Pacifico';
-    font-size: 30px;
-    font-weight:bold;
-    color: #37f713;
-    text-shadow:
-      0 0 7px #37f713,
-      0 0 10px #37f713,
-      0 0 21px #37f713,
-      0 0 42px #37f713,
-      0 0 82px #0fa,
-      0 0 92px #0fa,
-      0 0 102px #0fa;
-    height:60px;
-  }
+  font-family: cursive, 'Pacifico';
+  font-size: 30px;    
+  font-weight:bold;
+  color: #37f713;
+  text-shadow:
+    0 0 7px #37f713,
+    0 0 10px #37f713,
+    0 0 21px #37f713,
+    0 0 42px #37f713,
+    0 0 82px #0fa,
+    0 0 92px #0fa,
+    0 0 102px #0fa;
+  height:60px;
+}
 
-  #EXT-SELFIES .count {
-    font-family: cursive, 'Pacifico';
-    font-size:180px;
-    font-weight:bold;
-    color:#37f713;
-    text-shadow:
-      0 0 7px #37f713,
-      0 0 10px #37f713,
-      0 0 21px #37f713,
-      0 0 42px #0fa,;
-    height: 200px;
-    line-height: 80%;
-  }
+#EXT-SELFIES .count {
+  font-family: cursive, 'Pacifico';
+  font-size:180px;
+  font-weight:bold;
+  color:#37f713;
+  text-shadow:
+    0 0 7px #37f713,
+    0 0 10px #37f713,
+    0 0 21px #37f713,
+    0 0 42px #0fa,;
+  height: 200px;
+  line-height: 80%;
+}
 
 #EXT-SELFIES .result {
   position: absolute;
@@ -80,74 +80,78 @@
   display:block;
 }
 
-#EXT-SELFIE-BUTTON .hidden {
+#EXT-SELFIES-BUTTON.hidden {
   display: none
 }
 
-#EXT-SELFIE-BUTTON {
+#EXT-SELFIES-BUTTON {
   background-size: 100%;
   width: 500px;
   height: 502px;
   margin-left: 250px;
 }
 
-#EXT-SELFIE-BUTTON .flash {
-opacity: 1;
-animation: flash normal 2.2s infinite ease-in;
+#EXT-SELFIES-BUTTON.flash {
+  opacity: 1;
+  animation: flash normal 2.2s infinite ease-in;
 }
 
 @keyframes flash {
-0% {
-    opacity:1;
-}
-50% {
-    opacity:0;
-}
-100% {
-    opacity:1;
-}
-}
-#EXT-SELFIE-RETRY .hidden {
-display: none;
+  0% {
+      opacity:1;
+  }
+  50% {
+      opacity:0;
+  }
+  100% {
+      opacity:1;
+  }
 }
 
-#EXT-SELFIE-RETRY {
-  background-size: 100%;
-  width: 400px;
-  height: 402px;
-  margin-left: 20px;
-}
-
-#EXT-SELFIE-RETRY .shown {
-  display: bloc;
-}
-
-#EXT-SELFIE-VALIDATE .hidden {
+#EXT-SELFIES-RETRY.hidden {
   display: none;
 }
 
-#EXT-SELFIE-VALIDATE {
-  background-size: 100%;
-  width: 400px;
-  height: 402px;
+#EXT-SELFIES-RETRY {
+  background-size: 50%;
+  width: 15px;
+  height: 15px;
+  margin-left: 20px;
+}
+
+#EXT-SELFIES-RETRY.shown {
+  display: block;
+}
+
+#EXT-SELFIES-VALIDATE.hidden {
+  display: none;
+}
+
+#EXT-SELFIES-VALIDATE {
+  background-size: 50%;
+  width: 15px;
+  height: 15px;
   margin-right: 20px;
+  z-index: 1;
+  position: absolute;
+  background-repeat: no-repeat;
 }
 
-#EXT-SELFIE-VALIDATE .shown{
-  display: bloc;
+#EXT-SELFIES-VALIDATE.shown{
+  display: block;
 }
 
-#EXT-SELFIE-EXIT .hidden {
+#EXT-SELFIES-EXIT.hidden {
 display: none;
 }
 
-#EXT-SELFIE-EXIT {
-  background-size: 100%;
-  width: 400px;
-  height: 402px;
+#EXT-SELFIES-EXIT {
+  background-size: 50%;
+  width: 15px;
+  height: 15px;
   margin-left: 250px;
 }
 
-#EXT-SELFIE-EXIT .shown{
-  display: bloc;
+#EXT-SELFIES-EXIT.shown {
+  display: block;
 }

@@ -14,7 +14,7 @@ Module.register("EXT-Selfies", {
     shootMessage: "Smile!",
     shootCountdown: 5,
     displayButton: true,
-    buttonStyle: ["1"], // Set "1", "2", "3", "4", "5" ------> or ["1", "3,"5"]
+    buttonStyle: "1", // Set "1", "2", "3", "4", "5" ------> or ["1", "3,"5"]
     updateInterval: 7 * 1000, // *
     animationSpeed: 3000,
     playShutter: true,
@@ -78,40 +78,36 @@ Module.register("EXT-Selfies", {
   },
 
   start: function() {
+   /** initialize all values before using **/
     this.session = {}
     this.sendSocketNotification("INIT", this.config)
     this.lastPhoto = null
-    this.logoSelfies = this.buttonsUrls
-    this.logoValidate = this.file("resources/validate.png")
-    this.logoExit = this.file("resources/exit.png")
-    this.logoRetry = this.file("resources/retry.png")
-    var getTimeStamp = new Date()
-    if (this.config.buttonStyle != '') {
-      this.logoSelfies = this.buttonUrls[this.config.buttonStyle];
-    }
-    self = this    
-    setInterval(function() {
-      self.updateDom(self.config.animationSpeed || 0); // use config.animationSpeed or revert to zero @ninjabreadman
-    }, this.config.updateInterval);
-    this.url = '';
+    this.logoValidate = "/modules/EXT-Selfies/resources/validate.png"
+    this.logoExit = "/modules/EXT-Selfiesresources/exit.png"
+    this.logoRetry = "/modules/EXT-Selfiesresources/retry.png"
     this.buttonUrls = {
-      "1": 'resources/master.png',
-      "2": 'resources/halloween.png',
-      "3": 'resources/birthday.png',
-      "4": 'resources/christmas.png'
+      1: "/modules/EXT-Selfies/resources/master.png",
+      2: "/modules/EXT-Selfies/resources/halloween.png",
+      3: "/modules/EXT-Selfies/resources/birthday.png",
+      4: "/modules/EXT-Selfies/resources/christmas.png"
+    }
+    this.logoSelfies = this.buttonUrls[1]
+    /** end of initialize **/
+    if (this.config.buttonStyle) { // @todo check this.buttonUrls length
+      this.logoSelfies = this.buttonUrls[this.config.buttonStyle]
     }
   },
 
   getDom: function() {
+    var wrapper = document.createElement("div")
     if (this.config.displayButton) {
-      var wrapper = document.createElement("div")
+      var getTimeStamp = new Date()
       var icon = document.createElement("div")
-			icon.id = "EXT-SELFIE-BUTTON"
-			icon.style.backgroundImage = "url("+this.logoSelfies + "?seed=" + getTimeStamp+")"
+			icon.id = "EXT-SELFIES-BUTTON"
+			icon.style.backgroundImage = "url(" + this.logoSelfies + ")"
 			icon.classList.add("flash")
 			var session = {}
 			icon.addEventListener("click", () => this.shoot(this.config, session))
-			wrapper.appendChild(icon)
     } else wrapper.style.display = 'none'
     return wrapper
   },
@@ -140,19 +136,19 @@ Module.register("EXT-Selfies", {
     dom.appendChild(shutter)
 
     var validateIcon = document.createElement("div")
-    validateIcon.id = "EXT-SELFIE-VALIDATE"
+    validateIcon.id = "EXT-SELFIES-VALIDATE"
     validateIcon.classList.add("hidden")
 
     dom.appendChild(validateIcon)
 
-    var retryIcon = document.createElemente("div")
-    retryIcon.id = "EXT-SELFIE-RETRY"
+    var retryIcon = document.createElement("div")
+    retryIcon.id = "EXT-SELFIES-RETRY"
     retryIcon.classList.add("hidden")
 
     dom.appendChild(retryIcon)
 
     var exitIcon = document.createElement("div")
-    exitIcon.id = "EXT-SELFIE-EXIT"
+    exitIcon.id = "EXT-SELFIES-EXIT"
     exitIcon.classList.add("hidden")
 
     dom.appendChild(exitIcon)
@@ -285,21 +281,29 @@ Module.register("EXT-Selfies", {
     var rd = document.querySelector("#EXT-SELFIES .result")
     rd.style.backgroundImage = `url(modules/EXT-Selfies/photos/${result.uri})`
 
-    wrapper.style.background
     rd.classList.toggle("shown")
-    var validateIcon = document.querySelector("#EXT-SELFIE-VALIDATE .shown")
-    validateIcon.style.backgroundImage = "url("+this.logoValidate+")"
-    validateIcon.addEventListener("click", () => this.sendMail(data))
-    var retryIcon = document.querySelector("#EXT-SELFIE-RETRY .shown")
-    retryIcon.style.backgroundImage = "url("+this.logoRetry+")"
-    retryIcon.addEventListener("click", () => delete this.session [result.session.key] && this.shoot(this.config(session)))
-    var exitIcon = document.querySelector("EXT-SELFIE-EXIT .shown")
-    exitIcon.style.backgroundImage = "url("+this.logoExit+")"
-    exitIcon.addEventListener("click", () => this.sendNotification("EXT_SELFIES-END")
+    
+    var validateIcon = document.querySelector("#EXT-SELFIES-VALIDATE")
+    validateIcon.classList.remove("hidden")
+    validateIcon.style.backgroundImage = "url(" + this.logoValidate + ")"
+    icon.onclick = (event)=> {
+      this.sendNotification("EXT-SELFIES")
+    }
+    var retryIcon = document.querySelector("#EXT-SELFIES-EXIT")
+    retryIcon.classList.remove("hidden")
+    retryIcon.style.backgroundImage = "url(" + this.logoRetry + ")"
+    icon.onclick = (event)=> {
+      this.sendNotification("EXT_SELFIES-SHOOT")
+    }
+    var exitIcon = document.querySelector("#EXT-SELFIES-VALIDATE")
+    exitIcon.classList.remove("hidden")
+    exitIcon.style.backgroundImage = "url(" + this.logoExit + ")"
+    exitIcon.onclick = (event)=> {
+    this.sendNotification("EXT_SELFIES-END")
     setTimeout(()=>{
       rd.classList.toggle("shown")
       con.classList.toggle("shown")
       this.sendNotification("EXT_SELFIES-END")
     }, this.config.resultDuration)
   }
-});
+})
