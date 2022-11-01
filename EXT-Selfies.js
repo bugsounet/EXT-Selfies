@@ -79,6 +79,7 @@ Module.register("EXT-Selfies", {
 
   start: function() {
    /** initialize all values before using **/
+    /** initialize all values before using **/
     this.session = {}
     this.sendSocketNotification("INIT", this.config)
     this.lastPhoto = null
@@ -96,6 +97,11 @@ Module.register("EXT-Selfies", {
     if (this.config.buttonStyle) { // @todo check this.buttonUrls length
       this.logoSelfies = this.buttonUrls[this.config.buttonStyle]
     }
+    /* not needed use flash css
+    setInterval(() => {
+      this.updateDom(this.config.animationSpeed || 0); // use config.animationSpeed or revert to zero @ninjabreadman
+    }, this.config.updateInterval)
+    */
   },
 
   getDom: function() {
@@ -113,8 +119,10 @@ Module.register("EXT-Selfies", {
   },
 
   prepare: function() {
+    /** popup main code **/
     var dom = document.createElement("div")
     dom.id = "EXT-SELFIES"
+
     var win = document.createElement("div")
     win.classList.add("window")
     var message = document.createElement("div")
@@ -136,7 +144,7 @@ Module.register("EXT-Selfies", {
     dom.appendChild(shutter)
 
     var validateIcon = document.createElement("div")
-    validateIcon.id = "EXT-SELFIES-VALIDATE"
+    validateIcon.id = "EXT-SELFIESS-VALIDATE"
     validateIcon.classList.add("hidden")
 
     dom.appendChild(validateIcon)
@@ -148,7 +156,7 @@ Module.register("EXT-Selfies", {
     dom.appendChild(retryIcon)
 
     var exitIcon = document.createElement("div")
-    exitIcon.id = "EXT-SELFIES-EXIT"
+    exitIcon.id = "EXT-SELFIESS-EXIT"
     exitIcon.classList.add("hidden")
 
     dom.appendChild(exitIcon)
@@ -157,6 +165,8 @@ Module.register("EXT-Selfies", {
     result.classList.add("result")
 
     dom.appendChild(result)
+
+    /** attach this popup to the body **/
     document.body.appendChild(dom)
   },
 
@@ -207,6 +217,9 @@ Module.register("EXT-Selfies", {
         break
       case "EXT_SELFIES-LAST":
         this.showLastPhoto(this.lastPhoto)
+        break
+      case "EXT_SELFIES-RESULT":
+        this.
         break
     }
   },
@@ -287,7 +300,7 @@ Module.register("EXT-Selfies", {
     validateIcon.classList.remove("hidden")
     validateIcon.style.backgroundImage = "url(" + this.logoValidate + ")"
     icon.onclick = (event)=> {
-      this.sendNotification("EXT-SELFIES")
+      this.sendNotification("EXT_SELFIES-RESULT",(result))
     }
     var retryIcon = document.querySelector("#EXT-SELFIES-EXIT")
     retryIcon.classList.remove("hidden")
