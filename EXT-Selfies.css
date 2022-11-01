@@ -44,7 +44,7 @@
     0 0 21px #37f713,
     0 0 42px #37f713,
     0 0 82px #0fa,
-    0 0 92px #0fa,
+    0 0 92px 
     0 0 102px #0fa;
   height:60px;
 }
@@ -81,7 +81,7 @@
 }
 
 #EXT-SELFIES-BUTTON.hidden {
-  display: none
+  display: none;
 }
 
 #EXT-SELFIES-BUTTON {

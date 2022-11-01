@@ -299,7 +299,8 @@ Module.register("EXT-Selfies", {
     exitIcon.classList.remove("hidden")
     exitIcon.style.backgroundImage = "url(" + this.logoExit + ")"
     exitIcon.onclick = (event)=> {
-    this.sendNotification("EXT_SELFIES-END")
+      this.sendNotification("EXT_SELFIES-END")
+    }
     setTimeout(()=>{
       rd.classList.toggle("shown")
       con.classList.toggle("shown")
