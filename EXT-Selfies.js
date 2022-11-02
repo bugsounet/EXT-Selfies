@@ -96,9 +96,9 @@ Module.register("EXT-Selfies", {
     this.logoRetry = "/modules/EXT-Selfiesresources/retry.png"
     this.buttonUrls = {
       1: "/modules/EXT-Selfies/resources/master.png",
-      2: "/modules/EXT-Selfies/resources/halloween.png", // not defined
-      3: "/modules/EXT-Selfies/resources/birthday.png",  // not defined
-      4: "/modules/EXT-Selfies/resources/christmas.png"  // not defined
+      2: "/modules/EXT-Selfies/resources/halloween.png",
+      3: "/modules/EXT-Selfies/resources/birthday.png",  
+      4: "/modules/EXT-Selfies/resources/christmas.png"
     }
 
     /** end of initialize **/
