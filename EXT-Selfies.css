@@ -129,13 +129,14 @@
 }
 
 #EXT-SELFIES-VALIDATE {
-  background-size: 50%;
-  width: 15px;
-  height: 15px;
+  background-size: 100%;
+  width: 70px;
+  height: 70px;
   margin-right: 20px;
   z-index: 1;
   position: absolute;
   background-repeat: no-repeat;
+  margin-left: 10px;
 }
 
 #EXT-SELFIES-VALIDATE.shown{
