@@ -219,7 +219,7 @@ Module.register("EXT-Selfies", {
         this.showLastPhoto(this.lastPhoto)
         break
       case "EXT_SELFIES-RESULT":
-        this.
+        this.validateSelfie()
         break
     }
   },
@@ -257,32 +257,6 @@ Module.register("EXT-Selfies", {
   },
 
   postShoot: function(result) {
-    var at = false
-    if (result.session) {
-      if (result.session.ext == "TELBOT") {
-        at = true
-        this.cmdSelfieResult(result.session.key, result.path)
-      }
-      if (result.session.ext == "CALLBACK") {
-        if (this.session.hasOwnProperty(result.session.key)) {
-          callback = this.session[result.session.key]
-          callback({
-            path: result.path,
-            uri: result.uri
-          })
-          this.session[result.session.key] = null
-          delete this.session[result.session.key]
-        }
-      }
-    }
-
-    if (this.config.sendTelegramBot && !at) {
-      this.sendNotification("TELBOT_TELL_ADMIN", {
-        type: "PHOTO_PATH",
-        path: result.path
-      })
-      this.sendNotification("TELBOT_TELL_ADMIN", "New Selfie")
-    }
     this.lastPhoto = result
     this.showLastPhoto(result)
   },
@@ -319,5 +293,33 @@ Module.register("EXT-Selfies", {
       con.classList.toggle("shown")
       this.sendNotification("EXT_SELFIES-END")
     }, this.config.resultDuration)
+  },
+
+  validateSelfie: function(result) {
+    var at = false
+    if (result.session) {
+      if (result.session.ext == "TELBOT") {
+        at = true
+        this.cmdSelfieResult(result.session.key, result.path)
+      }        
+      if (result.session.ext == "CALLBACK") {
+        if (this.session.hasOwnProperty(result.session.key)) {
+          callback = this.session[result.session.key]
+          callback({
+            path: result.path,
+            uri: result.uri
+          })
+          this.session[result.session.key] = null
+          delete this.session[result.session.key]
+        }
+      }
+      if (this.config.sendTelegramBot && !at) {
+        this.sendNotification("TELBOT_TELL_ADMIN", {
+          type: "PHOTO_PATH",
+          path: result.path
+        })
+        this.sendNotification("TELBOT_TELL_ADMIN", "New Selfie")
+      }
+    }
   }
 })
