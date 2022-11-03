@@ -278,13 +278,13 @@ Module.register("EXT-Selfies", {
     var validateIcon = document.querySelector("#EXT-SELFIES-VALIDATE")
     validateIcon.classList.remove("hidden")
     validateIcon.style.backgroundImage = "url(" + this.logoValidate + ")"
-    icon.onclick = (event)=> { // <--- are you sure it's icon?
+    validateIcon.onclick = (event)=> { // <--- are you sure it's icon?
       this.sendNotification("EXT_SELFIES-RESULT", result)
     }
     var retryIcon = document.querySelector("#EXT-SELFIES-EXIT")
     retryIcon.classList.remove("hidden")
     retryIcon.style.backgroundImage = "url(" + this.logoRetry + ")"
-    icon.onclick = (event)=> { // <--- are you sure it's icon?
+    retryIcon.onclick = (event)=> { // <--- are you sure it's icon?
       // warn: don't forget to reset session: {}
       this.sendNotification("EXT_SELFIES-SHOOT")
     }
