@@ -7,8 +7,8 @@
 /** Warn: use `npm run update` for updating **/
 
 /** @todo:
- * move backgrounds from `showLastPhoto: {}` to `prepare: {}`
  * decrease main background (master.png) size ?
+ * toCode: buttonStyle value / array
 **/
 
 /** good way ! **/
@@ -29,6 +29,7 @@ Module.register("EXT-Selfies", {
     playShutter: true,
     shutterSound: "shutter.mp3",
     resultDuration: 1000 * 10,
+    autoValidate: false,
     sendTelegramBot: true
   },
 
@@ -92,8 +93,8 @@ Module.register("EXT-Selfies", {
     this.sendSocketNotification("INIT", this.config)
     this.lastPhoto = null
     this.logoValidate = "/modules/EXT-Selfies/resources/validate.png"
-    this.logoExit = "/modules/EXT-Selfiesresources/exit.png"
-    this.logoRetry = "/modules/EXT-Selfiesresources/retry.png"
+    this.logoExit = "/modules/EXT-Selfies/resources/exit.png"
+    this.logoRetry = "/modules/EXT-Selfies/resources/retry.png"
     this.buttonUrls = {
       1: "/modules/EXT-Selfies/resources/master.png",
       2: "/modules/EXT-Selfies/resources/halloween.png",
@@ -113,9 +114,7 @@ Module.register("EXT-Selfies", {
     if (this.config.displayButton) {
       var icon = document.createElement("div")
 			icon.id = "EXT-SELFIES-BUTTON"
-      console.log(this.logoSelfies)
-			// icon.style.backgroundImage = "url(" + this.logoSelfies + ")"
-      icon.style.backgroundImage = `url(${this.logoSelfies})` // <-- better with this
+      icon.style.backgroundImage = `url(${this.logoSelfies})`
 			icon.classList.add("flash")
 			icon.addEventListener("click", () => this.shoot(this.config, session))
       wrapper.appendChild(icon) // <--- missing
@@ -148,27 +147,27 @@ Module.register("EXT-Selfies", {
     }
     dom.appendChild(shutter)
 
-    var validateIcon = document.createElement("div")
-    validateIcon.id = "EXT-SELFIES-VALIDATE"
-    validateIcon.classList.add("hidden")
+    var validatePannel = document.createElement("div")
+    validatePannel.id = "EXT-SELFIES-PANNEL"
 
-    dom.appendChild(validateIcon)
+      var validateIcon = document.createElement("div")
+      validateIcon.id = "EXT-SELFIES-VALIDATE"
+      validateIcon.style.backgroundImage = `url(${this.logoValidate})`
+      validatePannel.appendChild(validateIcon)
 
-    var retryIcon = document.createElement("div")
-    retryIcon.id = "EXT-SELFIES-RETRY"
-    retryIcon.classList.add("hidden")
+      var retryIcon = document.createElement("div")
+      retryIcon.id = "EXT-SELFIES-RETRY"
+      retryIcon.style.backgroundImage = `url(${this.logoRetry})`
+      validatePannel.appendChild(retryIcon)
 
-    dom.appendChild(retryIcon)
+      var exitIcon = document.createElement("div")
+      exitIcon.id = "EXT-SELFIES-EXIT"
+      exitIcon.style.backgroundImage = `url(${this.logoExit})`
+      validatePannel.appendChild(exitIcon)
 
-    var exitIcon = document.createElement("div")
-    exitIcon.id = "EXT-SELFIES-EXIT"
-    exitIcon.classList.add("hidden")
-
-    dom.appendChild(exitIcon)
-    
+    dom.appendChild(validatePannel)
     var result = document.createElement("result")
     result.classList.add("result")
-
     dom.appendChild(result)
 
     /** attach this popup to the body **/
@@ -179,9 +178,6 @@ Module.register("EXT-Selfies", {
     switch(noti) {
       case "SHOOT_RESULT":
         this.postShoot(payload)
-        break
-      case "WEB_REQUEST":
-        this.shoot(payload)
         break
       case "ERROR":
         this.sendNotification("EXT_ALERT", {
@@ -221,16 +217,13 @@ Module.register("EXT-Selfies", {
         this.sendSocketNotification("EMPTY")
         break
       case "EXT_SELFIES-LAST":
-        this.showLastPhoto(this.lastPhoto)
-        break
-      case "EXT_SELFIES-RESULT":
-        this.validateSelfie()
+        this.showLastPhoto(this.lastPhoto, true)
         break
     }
   },
 
   shoot: function(option={}, session={}) {
-    this.sendNotification("EXT_SELFIES-START")
+    this.sendNotification("EXT_SELFIES-START") // inform GW Selfie will start
     var sound = (option.hasOwnProperty("playShutter")) ? option.playShutter : this.config.playShutter
     var countdown = (option.hasOwnProperty("shootCountdown")) ? option.shootCountdown : this.config.shootCountdown
     var con = document.querySelector("#EXT-SELFIES")
@@ -263,45 +256,62 @@ Module.register("EXT-Selfies", {
 
   postShoot: function(result) {
     this.lastPhoto = result
-    this.showLastPhoto(result)
+    if (!this.config.autoValidate) this.validateSelfie(result)
+    else this.sendSelfieTB(result)
+    this.showLastPhoto(result, this.config.autoValidate)
   },
 
-  showLastPhoto: function(result) {
+  showLastPhoto: function(result, autoValidate= false) {
     if (this.config.debug) console.log("Showing last photo.")
     var con = document.querySelector("#EXT-SELFIES")
     con.classList.toggle("shown")
     var rd = document.querySelector("#EXT-SELFIES .result")
     rd.style.backgroundImage = `url(modules/EXT-Selfies/photos/${result.uri})`
-
     rd.classList.toggle("shown")
-    
-    var validateIcon = document.querySelector("#EXT-SELFIES-VALIDATE")
-    validateIcon.classList.remove("hidden")
-    validateIcon.style.backgroundImage = "url(" + this.logoValidate + ")"
-    icon.onclick = (event)=> { // <--- are you sure it's icon?
-      this.sendNotification("EXT_SELFIES-RESULT", result)
+
+    if (autoValidate) {
+      setTimeout(()=>{
+        this.closeDisplayer()
+      }, this.config.resultDuration)
     }
-    var retryIcon = document.querySelector("#EXT-SELFIES-EXIT")
-    retryIcon.classList.remove("hidden")
-    retryIcon.style.backgroundImage = "url(" + this.logoRetry + ")"
-    icon.onclick = (event)=> { // <--- are you sure it's icon?
-      // warn: don't forget to reset session: {}
-      this.sendNotification("EXT_SELFIES-SHOOT")
-    }
-    var exitIcon = document.querySelector("#EXT-SELFIES-VALIDATE")
-    exitIcon.classList.remove("hidden")
-    exitIcon.style.backgroundImage = "url(" + this.logoExit + ")"
-    exitIcon.onclick = (event)=> {
-      this.sendNotification("EXT_SELFIES-END")
-    }
-    setTimeout(()=>{
-      rd.classList.toggle("shown")
-      con.classList.toggle("shown")
-      this.sendNotification("EXT_SELFIES-END")
-    }, this.config.resultDuration)
   },
 
   validateSelfie: function(result) {
+    var pannel = document.getElementById("EXT-SELFIES-PANNEL") // select the pannel (validate, retry, exit)
+    pannel.classList.toggle("shown") // open pannel
+    var validateIcon = document.getElementById("EXT-SELFIES-VALIDATE")
+    validateIcon.onclick = ()=> {
+      this.sendSelfieTB(result) // send photo to Telegram messager
+      this.sendNotification("EXT_SELFIES-RESULT", result) // for external using [EXT-SelfiesViewer / EXT-SelfiesSender]
+      pannel.classList.toggle("shown") // close pannel
+      this.closeDisplayer() // close main displayer
+    }
+
+    var retryIcon = document.getElementById("EXT-SELFIES-RETRY")
+    retryIcon.onclick = ()=> {
+      console.log("RETRY")
+      this.closeDisplayer()
+      // to code: delete last shoot from storage
+      this.shoot()
+    }
+
+    var exitIcon = document.getElementById("EXT-SELFIES-EXIT")
+    exitIcon.onclick = ()=> {
+      console.log("EXIT")
+      this.closeDisplayer()
+      // to code: delete last shoot from storage
+    }
+  },
+
+  closeDisplayer: function () {
+    var con = document.querySelector("#EXT-SELFIES")
+    var rd = document.querySelector("#EXT-SELFIES .result")
+    rd.classList.toggle("shown")
+    con.classList.toggle("shown")
+    this.sendNotification("EXT_SELFIES-END") // inform GW Selfie is finish
+  },
+
+  sendSelfieTB: function(result) {
     var at = false
     if (result.session) {
       if (result.session.ext == "TELBOT") {
