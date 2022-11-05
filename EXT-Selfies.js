@@ -137,6 +137,11 @@ Module.register("EXT-Selfies", {
     win.appendChild(count)
     dom.appendChild(win)
 
+    var icon = document.createElement("div")
+		icon.id = "EXT-SELFIES-BUTTON"
+		icon.classList.add("hidden")
+    dom.appendChild(icon)
+    
     var shutter = document.createElement("audio")
     shutter.classList.add("shutter")
     if (this.config.playShutter) {
@@ -147,20 +152,20 @@ Module.register("EXT-Selfies", {
     var validatePannel = document.createElement("div")
     validatePannel.id = "EXT-SELFIES-PANNEL"
 
-      var validateIcon = document.createElement("div")
-      validateIcon.id = "EXT-SELFIES-VALIDATE"
-      validateIcon.style.backgroundImage = `url(${this.logoValidate})`
-      validatePannel.appendChild(validateIcon)
+    var validateIcon = document.createElement("div")
+    validateIcon.id = "EXT-SELFIES-VALIDATE"
+    validateIcon.style.backgroundImage = `url(${this.logoValidate})`
+    validatePannel.appendChild(validateIcon)
 
-      var retryIcon = document.createElement("div")
-      retryIcon.id = "EXT-SELFIES-RETRY"
-      retryIcon.style.backgroundImage = `url(${this.logoRetry})`
-      validatePannel.appendChild(retryIcon)
+    var retryIcon = document.createElement("div")
+    retryIcon.id = "EXT-SELFIES-RETRY"
+    retryIcon.style.backgroundImage = `url(${this.logoRetry})`
+    validatePannel.appendChild(retryIcon)
 
-      var exitIcon = document.createElement("div")
-      exitIcon.id = "EXT-SELFIES-EXIT"
-      exitIcon.style.backgroundImage = `url(${this.logoExit})`
-      validatePannel.appendChild(exitIcon)
+    var exitIcon = document.createElement("div")
+    exitIcon.id = "EXT-SELFIES-EXIT"
+    exitIcon.style.backgroundImage = `url(${this.logoExit})`
+    validatePannel.appendChild(exitIcon)
 
     dom.appendChild(validatePannel)
     var result = document.createElement("result")
@@ -224,10 +229,9 @@ Module.register("EXT-Selfies", {
     var countdown = (option.hasOwnProperty("shootCountdown")) ? option.shootCountdown : this.config.shootCountdown
     var con = document.querySelector("#EXT-SELFIES")
     var win = document.querySelector("#EXT-SELFIES .window")
-    /** not defined in prepare !
     var icon = document.querySelector("EXT-SELFIES-ICON")
-    icon.classList.toggle("shown")
-    **/
+    icon.classList.toggle("shown") // masque le bouton durant le selfie ?
+    
     con.classList.add("shown")
     win.classList.add("shown")
 
@@ -284,18 +288,13 @@ Module.register("EXT-Selfies", {
       this.sendSelfieTB(result) 
       this.sendNotification("EXT_SELFIES-RESULT", result)
       this.closeDisplayer()
-      this.refreshIcon()
     }
 
     var retryIcon = document.getElementById("EXT-SELFIES-RETRY")
     retryIcon.onclick = ()=> { 
-      this.sendSocketNotification("DELETE", result) // delete last result
+      this.sendSocketNotification("DELETE", result) //perfect i understand why node helper now
       this.closeDisplayer()
-      /** finaly it's auto reseted with Telegrambot!
-      this.session[result.session.key] = null
-      delete this.session[result.session.key]
-      **/
-      this.shoot(this.config, {}) // shoot again
+      this.shoot(this.config, {}) 
     }
 
     var exitIcon = document.getElementById("EXT-SELFIES-EXIT")
@@ -312,7 +311,8 @@ Module.register("EXT-Selfies", {
     if (pannel) pannel.classList.remove("shown")
     rd.classList.remove("shown")
     con.classList.remove("shown")
-    this.sendNotification("EXT_SELFIES-END") // inform GW Selfie is finish
+    icon.classList.remove("hidden")  // fera ré-apparaitre le boutton ??
+    this.sendNotification("EXT_SELFIES-END")
   },
 
   sendSelfieTB: function(result) {
@@ -341,12 +341,5 @@ Module.register("EXT-Selfies", {
         this.sendNotification("TELBOT_TELL_ADMIN", "New Selfie")
       }
     }
-  },
-
-  refreshIcon: function() {
-    /** not defined
-    var icon = document.getElementById("EXT-SELFIES-ICON")
-    icon.classList.toggle("shown")
-    **/
   }
 })
