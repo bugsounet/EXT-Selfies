@@ -52,20 +52,26 @@ module.exports = NodeHelper.create({
   },
 
   socketNotificationReceived: function(noti, payload) {
-    if (payload.debug) log("Notification received: " + noti)
-    if (noti == "INIT") this.initialize(payload)
-    if (noti == "SHOOT") {
-      log('Shoot payload:', payload)
-      this.shoot(payload)
-    }
-    if (noti == "EMPTY") {
-      var dir = path.resolve(__dirname, "photos")
-      exec(`rm ${dir}/*.jpg`, (err, sto, ste)=>{
-        log("Cleaning directory:", dir)
-        if (err) console.error("[SELFIES] Cleaning directory Error:", err)
-        if (sto) log("stdOut:", sto)
-        if (ste) log("stdErr:", ste)
-      })
+    switch (noti) {
+      case "INIT":
+        this.initialize(payload)
+        break
+      case "SHOOT":
+        log('Shoot payload:', payload)
+        this.shoot(payload)
+        break
+      case "EMPTY":
+        var dir = path.resolve(__dirname, "photos")
+        exec(`rm ${dir}/*.jpg`, (err, sto, ste)=>{
+          log("Cleaning directory:", dir)
+          if (err) console.error("[SELFIES] Cleaning directory Error:", err)
+          if (sto) log("stdOut:", sto)
+          if (ste) log("stdErr:", ste)
+        })
+        break
+      case "DELETE":
+        this.deleteShoot(payload)
+        break
     }
   },
 
@@ -96,5 +102,20 @@ module.exports = NodeHelper.create({
         session: payload.session
       })
     })
+  },
+
+  deleteShoot: function(payload) {
+    console.log(payload)
+    if (payload.path) {
+      fs.unlink(payload.path,
+        err => {
+          if (err) {
+            this.sendSocketNotification("ERROR", "Error when delete last shoot!")
+            return console.log("[SELFIES] Delete Error:", err)
+          }
+          log("File deleted:", payload.uri)
+        }
+      )
+    }
   }
 });
