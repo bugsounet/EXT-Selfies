@@ -86,26 +86,36 @@
 }
 
 #EXT-SELFIES-BUTTON {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#EXT-SELFIES-BUTTON.buttonStyle {
   background-size: 100%;
-  width: 400px;
-  height: 402px;
-  margin-left: 250px;
+  background-repeat: no-repeat;
+  width: 200px;
+  height: 200px;
+}
+
+#EXT-SELFIES-BUTTON.uniqueFlash {
+  opacity: 0;
+  animation: flash normal 2s 1 ease-in;
 }
 
 #EXT-SELFIES-BUTTON.flash {
-  opacity: 1;
-  animation: flash normal 2.2s infinite ease-in;
+  opacity: 0;
+  animation: flash normal 2s infinite ease-in;
 }
 
 @keyframes flash {
   0% {
-      opacity:1;
-  }
-  50% {
       opacity:0;
   }
-  100% {
+  50% {
       opacity:1;
+  }
+  100% {
+      opacity:0;
   }
 }
 
