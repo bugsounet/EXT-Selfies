@@ -88,7 +88,6 @@ Module.register("EXT-Selfies", {
   },
 
   start: function() {
-    /** initialize all values before using **/
     this.session = {}
     this.sendSocketNotification("INIT", this.config)
     this.lastPhoto = null
@@ -101,8 +100,6 @@ Module.register("EXT-Selfies", {
       3: "/modules/EXT-Selfies/resources/birthday.png",  
       4: "/modules/EXT-Selfies/resources/christmas.png"
     }
-
-    /** end of initialize **/
     if (this.config.buttonStyle && this.buttonUrls[this.config.buttonStyle]) {
       this.logoSelfies = this.buttonUrls[this.config.buttonStyle]
     } else this.logoSelfies = this.buttonUrls[1] 
@@ -226,10 +223,12 @@ Module.register("EXT-Selfies", {
     var sound = (option.hasOwnProperty("playShutter")) ? option.playShutter : this.config.playShutter
     var countdown = (option.hasOwnProperty("shootCountdown")) ? option.shootCountdown : this.config.shootCountdown
     var con = document.querySelector("#EXT-SELFIES")
-    con.classList.toggle("shown")
+    var win = document.querySelector("#EXT-SELFIES .window")
+    /** not defined in prepare !
     var icon = document.querySelector("EXT-SELFIES-ICON")
     icon.classList.toggle("shown")
-    var win = document.querySelector("#EXT-SELFIES .window")
+    **/
+    con.classList.add("shown")
     win.classList.add("shown")
 
     const loop = (count) => {
@@ -276,57 +275,33 @@ Module.register("EXT-Selfies", {
   },
 
   validateSelfie: function(result) {
-/*
-    var pannel = document.getElementById("EXT-SELFIES-PANNEL") // select the pannel (validate, retry, exit)
-    pannel.classList.add("shown") // open pannel
+    var pannel = document.getElementById("EXT-SELFIES-PANNEL")
+    pannel.classList.add("shown")
+
     var validateIcon = document.getElementById("EXT-SELFIES-VALIDATE")
     validateIcon.onclick = ()=> {
       this.lastPhoto = result
-      this.sendSelfieTB(result) // send photo to Telegram messager
-      this.sendNotification("EXT_SELFIES-RESULT", result) // for external using [EXT-SelfiesViewer / EXT-SelfiesSender]
-      this.closeDisplayer() // close main displayer
-    }
-
-    var retryIcon = document.getElementById("EXT-SELFIES-RETRY")
-    retryIcon.onclick = ()=> {
-      this.sendSocketNotification("DELETE", result) // delte last result
-      this.closeDisplayer()
-      this.shoot(this.config, {}) // shoot again
-*/
-    var pannel = document.getElementById("EXT-SELFIES-PANNEL")
-    pannel.classList.toggle("shown") 
-
-    var validateIcon = document.getElementById("EXT-SELFIES-VALIDATE")
-    validateIcon.onclick = ()=> {
-      console.log("VALIDATE")
       this.sendSelfieTB(result) 
       this.sendNotification("EXT_SELFIES-RESULT", result)
-      pannel.classList.toggle("shown") 
       this.closeDisplayer()
       this.refreshIcon()
     }
+
     var retryIcon = document.getElementById("EXT-SELFIES-RETRY")
     retryIcon.onclick = ()=> { 
-      console.log("RETRY")
-      pannel.classList.toggle("shown") 
+      this.sendSocketNotification("DELETE", result) // delete last result
       this.closeDisplayer()
+      /** finaly it's auto reseted with Telegrambot!
       this.session[result.session.key] = null
       delete this.session[result.session.key]
-      this.shoot()
+      **/
+      this.shoot(this.config, {}) // shoot again
     }
 
     var exitIcon = document.getElementById("EXT-SELFIES-EXIT")
     exitIcon.onclick = ()=> {
-/*
       this.sendSocketNotification("DELETE", result)
       this.closeDisplayer()
-*/
-      console.log("EXIT")
-      this.session[result.session.key] = null
-      delete this.session[result.session.key]
-      pannel.classList.toggle("shown") 
-      this.closeDisplayer()
-      this.refreshIcon()
     }
   },
 
@@ -369,7 +344,9 @@ Module.register("EXT-Selfies", {
   },
 
   refreshIcon: function() {
+    /** not defined
     var icon = document.getElementById("EXT-SELFIES-ICON")
     icon.classList.toggle("shown")
+    **/
   }
 })
