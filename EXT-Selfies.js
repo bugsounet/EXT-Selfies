@@ -9,6 +9,7 @@
 /** @todo:
  * decrease main background (master.png) size ?
  * toCode: buttonStyle value / array
+ * autoValidate with telegrambot
 **/
 
 /** good way ! **/
@@ -109,11 +110,18 @@ Module.register("EXT-Selfies", {
     var wrapper = document.createElement("div")
     var session = {}
     if (this.config.displayButton) {
-      var icon = document.createElement("div")
-			icon.id = "EXT-SELFIES-BUTTON"
-      icon.style.backgroundImage = `url(${this.logoSelfies})`
-			icon.classList.add("flash")
-			icon.addEventListener("click", () => this.shoot(this.config, session))
+      var icon // define icon as var
+      if (this.config.buttonStyle) { // buttonStyle > 1
+        icon = document.createElement("div")
+        icon.id = "EXT-SELFIES-BUTTON"
+        icon.style.backgroundImage = `url(${this.logoSelfies})`
+        icon.classList.add("flash")
+      } else { // default camera fa icon
+        icon = document.createElement("span")
+        icon.className = "fa fa-camera fa-large"
+        icon.classList.add("large")
+      }
+      icon.addEventListener("click", () => this.shoot(this.config, session))
       wrapper.appendChild(icon)
     } else wrapper.style.display = 'none'
     return wrapper
