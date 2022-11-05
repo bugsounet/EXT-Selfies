@@ -7,7 +7,7 @@
 /** Warn: use `npm run update` for updating **/
 
 /** @todo:
- * autoValidate with telegrambot
+ * ?
 **/
 
 Module.register("EXT-Selfies", {
@@ -21,13 +21,15 @@ Module.register("EXT-Selfies", {
     shootCountdown: 5,
     displayButton: true,
     buttonStyle: 1, // Set 1, 2, 3, 4, 5 --- // don't try to past a string as a number ;)
+    blinkButton: false,
     updateInterval: 7 * 1000, // *
     animationSpeed: 3000,
     playShutter: true,
     shutterSound: "shutter.mp3",
     resultDuration: 1000 * 10,
     autoValidate: false,
-    sendTelegramBot: true
+    sendTelegramBot: true,
+    useFlash: true
   },
 
   getStyles: function() {
@@ -81,13 +83,14 @@ Module.register("EXT-Selfies", {
             },1)
           })
         } else {
-          icon.classList.add("flash")
+          if (this.config.blinkButton) icon.classList.add("flash")
         }
       } else { // buttonStyle = 0
         icon = document.createElement("span")
         icon.id = "EXT-SELFIES-BUTTON"
         icon.className = "fa fa-camera fa-large"
         icon.classList.add("large")
+        if (this.config.blinkButton) icon.classList.add("flash")
       }
       icon.addEventListener("click", () => this.shoot(this.config, session))
       wrapper.appendChild(icon)
@@ -239,9 +242,9 @@ Module.register("EXT-Selfies", {
   },
 
   postShoot: function(result) {
-    if (!this.config.autoValidate) this.validateSelfie(result)
+    if (!this.config.autoValidate && !result.session.ext) this.validateSelfie(result)
     else this.sendSelfieTB(result)
-    this.showLastPhoto(result, this.config.autoValidate)
+    this.showLastPhoto(result, result.session.ext ? true : this.config.autoValidate)
   },
 
   showLastPhoto: function(result, autoValidate= false) {

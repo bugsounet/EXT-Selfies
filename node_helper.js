@@ -4,11 +4,20 @@
 *  10/2022          *
 ********************/
 
+/** Todo:
+ * use onoff npm library for flash
+**/
+
+/** Warn:
+ * flash is a test code !
+ **/
+
 const NodeWebcam = require( "node-webcam" );
 const moment = require("moment");
 const fs = require("fs");
 const path = require("path");
 const exec = require("child_process").exec;
+var {PythonShell} = require('python-shell'); // temp library for testing
 
 var log = () => { /* do nothing */ };
 
@@ -89,7 +98,11 @@ module.exports = NodeHelper.create({
       callbackReturn: "location",
       verbose: this.config.debug
     }, (payload.options) ? payload.options : {})
+
+    if (this.config.useFlash) this.openFlash()
+
     NodeWebcam.capture(filename, opts, (err, data)=>{
+      if (this.config.useFlash) this.closeFlash()
       if (err || !fs.existsSync(data)) {
         console.error("[SELFIES] Capture Error!", err ? err : "")
         this.sendSocketNotification("ERROR", "Webcam Capture Error!")
@@ -102,10 +115,10 @@ module.exports = NodeHelper.create({
         session: payload.session
       })
     })
+
   },
 
   deleteShoot: function(payload) {
-    console.log(payload)
     if (payload.path) {
       fs.unlink(payload.path,
         err => {
@@ -117,5 +130,33 @@ module.exports = NodeHelper.create({
         }
       )
     }
+  },
+
+  openFlash: function() {
+    // open the flash code there
+    log("open flash")
+    let options = {
+      mode: 'text',
+      pythonOptions: ['-u'],
+      scriptPath: __dirname + "/resources"
+    }
+
+    let flash = new PythonShell('flash.py', options)
+
+    flash.on('message', function (message) {
+      log(message)
+    })
+    flash.on('stderr', function (stderr) {
+      console.log("[SELFIES]", stderr)
+    })
+    flash.on('stdout', function (stdout) {
+      console.log("[SELFIES]", stdout)
+    })
+  },
+
+  closeFlash: function() {
+    // close the flash code there
+    log("close flash")
   }
+
 });
