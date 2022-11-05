@@ -105,7 +105,7 @@ Module.register("EXT-Selfies", {
     /** end of initialize **/
     if (this.config.buttonStyle && this.buttonUrls[this.config.buttonStyle]) {
       this.logoSelfies = this.buttonUrls[this.config.buttonStyle]
-    } else this.logoSelfies = this.buttonUrls[1] // <-- set default
+    } else this.logoSelfies = this.buttonUrls[1] 
   },
 
   getDom: function() {
@@ -117,7 +117,7 @@ Module.register("EXT-Selfies", {
       icon.style.backgroundImage = `url(${this.logoSelfies})`
 			icon.classList.add("flash")
 			icon.addEventListener("click", () => this.shoot(this.config, session))
-      wrapper.appendChild(icon) // <--- missing
+      wrapper.appendChild(icon) 
     } else wrapper.style.display = 'none'
     return wrapper
   },
@@ -170,7 +170,6 @@ Module.register("EXT-Selfies", {
     result.classList.add("result")
     dom.appendChild(result)
 
-    /** attach this popup to the body **/
     document.body.appendChild(dom)
   },
 
@@ -223,11 +222,13 @@ Module.register("EXT-Selfies", {
   },
 
   shoot: function(option={}, session={}) {
-    this.sendNotification("EXT_SELFIES-START") // inform GW Selfie will start
+    this.sendNotification("EXT_SELFIES-START") 
     var sound = (option.hasOwnProperty("playShutter")) ? option.playShutter : this.config.playShutter
     var countdown = (option.hasOwnProperty("shootCountdown")) ? option.shootCountdown : this.config.shootCountdown
     var con = document.querySelector("#EXT-SELFIES")
     con.classList.toggle("shown")
+    var icon = document.querySelector("EXT-SELFIES-ICON")
+    icon.classList.toggle("shown")
     var win = document.querySelector("#EXT-SELFIES .window")
     win.classList.toggle("shown")
 
@@ -277,28 +278,36 @@ Module.register("EXT-Selfies", {
   },
 
   validateSelfie: function(result) {
-    var pannel = document.getElementById("EXT-SELFIES-PANNEL") // select the pannel (validate, retry, exit)
-    pannel.classList.toggle("shown") // open pannel
+    var pannel = document.getElementById("EXT-SELFIES-PANNEL")
+    pannel.classList.toggle("shown") 
+
     var validateIcon = document.getElementById("EXT-SELFIES-VALIDATE")
     validateIcon.onclick = ()=> {
-      this.sendSelfieTB(result) // send photo to Telegram messager
-      this.sendNotification("EXT_SELFIES-RESULT", result) // for external using [EXT-SelfiesViewer / EXT-SelfiesSender]
-      pannel.classList.toggle("shown") // close pannel
-      this.closeDisplayer() // close main displayer
+      console.log("VALIDATE")
+      this.sendSelfieTB(result) 
+      this.sendNotification("EXT_SELFIES-RESULT", result)
+      pannel.classList.toggle("shown") 
+      this.closeDisplayer()
+      this.refreshIcon()
     }
-    var retryIcon = document.querySelector("#EXT-SELFIES-EXIT")
-    retryIcon.classList.remove("hidden")
-    retryIcon.style.backgroundImage = "url(" + this.logoRetry + ")"
-    icon.onclick = (event)=> { // <--- are you sure it's icon?
-      // warn: don't forget to reset session: {}
-      this.sendNotification("EXT_SELFIES-SHOOT")
+    var retryIcon = document.getElementById("EXT-SELFIES-RETRY")
+    retryIcon.onclick = ()=> { 
+      console.log("RETRY")
+      pannel.classList.toggle("shown") 
+      this.closeDisplayer()
+      this.session[result.session.key] = null
+      delete this.session[result.session.key]
+      this.shoot()
     }
 
     var exitIcon = document.getElementById("EXT-SELFIES-EXIT")
     exitIcon.onclick = ()=> {
       console.log("EXIT")
+      this.session[result.session.key] = null
+      delete this.session[result.session.key]
+      pannel.classList.toggle("shown") 
       this.closeDisplayer()
-      // to code: delete last shoot from storage
+      this.refreshIcon()
     }
   },
 
@@ -307,7 +316,7 @@ Module.register("EXT-Selfies", {
     var rd = document.querySelector("#EXT-SELFIES .result")
     rd.classList.toggle("shown")
     con.classList.toggle("shown")
-    this.sendNotification("EXT_SELFIES-END") // inform GW Selfie is finish
+    this.sendNotification("EXT_SELFIES-END") 
   },
 
   sendSelfieTB: function(result) {
@@ -336,5 +345,10 @@ Module.register("EXT-Selfies", {
         this.sendNotification("TELBOT_TELL_ADMIN", "New Selfie")
       }
     }
+  },
+
+  refreshIcon: function() {
+    var icon = document.getElementById("EXT-SELFIES-ICON")
+    icon.classList.toggle("shown")
   }
 })
