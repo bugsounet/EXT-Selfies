@@ -25,7 +25,6 @@
   },
   "homepage": "https://wiki.bugsounet.fr",
   "dependencies": {
-    "node-webcam": "^0.8.1",
-    "python-shell": "^3.0.1"
+    "node-webcam": "^0.8.1"
   }
 }

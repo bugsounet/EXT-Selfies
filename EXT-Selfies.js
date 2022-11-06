@@ -6,10 +6,6 @@
 
 /** Warn: use `npm run update` for updating **/
 
-/** @todo:
- * ?
-**/
-
 Module.register("EXT-Selfies", {
   defaults: {
     debug: false,
@@ -164,6 +160,12 @@ Module.register("EXT-Selfies", {
         break
       case "SHOOTS_EMPTY":
         this.sendNotification("EXT_SELFIES-CLEAN_STORE")
+        break
+      case "FLASH_ON":
+        this.sendNotification("EXT_SELFIESFLASH-ON")
+        break
+      case "FLASH_OFF":
+        this.sendNotification("EXT_SELFIESFLASH-OFF")
         break
     }
   },
