@@ -162,6 +162,9 @@ Module.register("EXT-Selfies", {
         this.sendNotification("EXT_SELFIES-END")
         this.IsShooting = false
         break
+      case "SHOOTS_EMPTY":
+        this.sendNotification("EXT_SELFIES-CLEAN_STORE")
+        break
     }
   },
 
@@ -259,6 +262,7 @@ Module.register("EXT-Selfies", {
     if (autoValidate) {
       setTimeout(()=>{
         this.lastPhoto = result
+        this.sendNotification("EXT_SELFIES-RESULT", result)
         this.closeDisplayer()
       }, this.config.resultDuration)
     }

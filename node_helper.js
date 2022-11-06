@@ -72,10 +72,11 @@ module.exports = NodeHelper.create({
       case "EMPTY":
         var dir = path.resolve(__dirname, "photos")
         exec(`rm ${dir}/*.jpg`, (err, sto, ste)=>{
-          log("Cleaning directory:", dir)
-          if (err) console.error("[SELFIES] Cleaning directory Error:", err)
           if (sto) log("stdOut:", sto)
           if (ste) log("stdErr:", ste)
+          if (err) return console.error("[SELFIES] Cleaning directory Error:", err)
+          log("Cleaning directory:", dir)
+          this.sendSocketNotification("SHOOTS_EMPTY")
         })
         break
       case "DELETE":
