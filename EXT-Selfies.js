@@ -16,16 +16,21 @@ Module.register("EXT-Selfies", {
     shootMessage: "Smile!",
     shootCountdown: 5,
     displayButton: true,
-    buttonStyle: 1, // Set 1, 2, 3, 4, 5 --- // don't try to past a string as a number ;)
+    buttonStyle: 1, // Set 1, 2, 3, 4 --- can be an array [1,2] for blinking
+    buttons: {
+      1: "master.png",
+      2: "halloween.png",
+      3: "birthday.png",
+      4: "christmas.png"
+    },
     blinkButton: false,
-    updateInterval: 7 * 1000, // *
+    updateInterval: 7 * 1000,
     animationSpeed: 3000,
     playShutter: true,
     shutterSound: "shutter.mp3",
     resultDuration: 1000 * 10,
     autoValidate: false,
-    sendTelegramBot: true,
-    useFlash: true
+    sendTelegramBot: true
   },
 
   getStyles: function() {
@@ -37,20 +42,18 @@ Module.register("EXT-Selfies", {
     this.session = {}
     this.sendSocketNotification("INIT", this.config)
     this.lastPhoto = null
-    this.logoValidate = "/modules/EXT-Selfies/resources/validate.png"
-    this.logoExit = "/modules/EXT-Selfies/resources/exit.png"
-    this.logoRetry = "/modules/EXT-Selfies/resources/retry.png"
-    this.buttonUrls = {
-      1: "/modules/EXT-Selfies/resources/master.png",
-      2: "/modules/EXT-Selfies/resources/halloween.png",
-      3: "/modules/EXT-Selfies/resources/birthday.png",  
-      4: "/modules/EXT-Selfies/resources/christmas.png"
+    this.resourcesPatch = "/modules/EXT-Selfies/resources/"
+    this.logoSelfies = this.resourcesPatch
+    this.logo= {
+      Validate: this.resourcesPatch + "validate.png",
+      Exit: this.resourcesPatch + "exit.png",
+      Retry: this.resourcesPatch + "retry.png"
     }
-    if (this.config.buttonStyle && this.buttonUrls[this.config.buttonStyle]) {
-      this.logoSelfies = this.buttonUrls[this.config.buttonStyle]
-    } else if (Array.isArray(this.config.buttonStyle) && this.buttonUrls[this.config.buttonStyle[0]]) {
-      this.logoSelfies = this.buttonUrls[this.config.buttonStyle[0]]
-    } else this.logoSelfies = this.buttonUrls[1]
+    if (this.config.buttonStyle && this.config.buttons[this.config.buttonStyle]) {
+      this.logoSelfies += this.config.buttons[this.config.buttonStyle]
+    } else if (Array.isArray(this.config.buttonStyle) && this.config.buttons[this.config.buttonStyle[0]]) {
+      this.logoSelfies += this.config.buttons[this.config.buttonStyle[0]]
+    } else this.logoSelfies += this.config.buttons[1]
   },
 
   getDom: function() {
@@ -74,7 +77,7 @@ Module.register("EXT-Selfies", {
             if (nb > this.config.buttonStyle.length-1) nb = 0
             setTimeout(() => {
               icon.classList.add("uniqueFlash")
-              icon.style.backgroundImage = `url(${this.buttonUrls[this.config.buttonStyle[nb]]})`
+              icon.style.backgroundImage = `url(${this.resourcesPatch + this.config.buttons[this.config.buttonStyle[nb]]})`
               icon.classList.remove("hidden")
             },1)
           })
@@ -124,17 +127,17 @@ Module.register("EXT-Selfies", {
 
       var validateIcon = document.createElement("div")
       validateIcon.id = "EXT-SELFIES-VALIDATE"
-      validateIcon.style.backgroundImage = `url(${this.logoValidate})`
+      validateIcon.style.backgroundImage = `url(${this.logo.Validate})`
       validatePannel.appendChild(validateIcon)
 
       var retryIcon = document.createElement("div")
       retryIcon.id = "EXT-SELFIES-RETRY"
-      retryIcon.style.backgroundImage = `url(${this.logoRetry})`
+      retryIcon.style.backgroundImage = `url(${this.logo.Retry})`
       validatePannel.appendChild(retryIcon)
 
       var exitIcon = document.createElement("div")
       exitIcon.id = "EXT-SELFIES-EXIT"
-      exitIcon.style.backgroundImage = `url(${this.logoExit})`
+      exitIcon.style.backgroundImage = `url(${this.logo.Exit})`
       validatePannel.appendChild(exitIcon)
 
     dom.appendChild(validatePannel)
