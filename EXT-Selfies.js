@@ -6,6 +6,11 @@
 
 /** Warn: use `npm run update` for updating **/
 
+/** todo
+ * simplify TB function / move result to EXT-SelfiesSender (@bugsounet)
+ * maybe delete session ? (@bugsounet)
+**/
+
 Module.register("EXT-Selfies", {
   defaults: {
     debug: false,
@@ -16,7 +21,7 @@ Module.register("EXT-Selfies", {
     shootMessage: "Smile!",
     shootCountdown: 5,
     displayButton: true,
-    buttonStyle: 1, // Set 1, 2, 3, 4 --- can be an array [1,2] for blinking
+    buttonStyle: 1, // Set 1, 2, 3, 4 --- can be an array [1,2] for blinking --- 0 for default font-awesome icon (camera)
     buttons: {
       1: "master.png",
       2: "halloween.png",
@@ -49,11 +54,11 @@ Module.register("EXT-Selfies", {
       Exit: this.resourcesPatch + "exit.png",
       Retry: this.resourcesPatch + "retry.png"
     }
-    if (this.config.buttonStyle && this.config.buttons[this.config.buttonStyle]) {
+    if (this.config.buttonStyle && this.config.buttons[this.config.buttonStyle]) { // if buttonStyle is a number
       this.logoSelfies += this.config.buttons[this.config.buttonStyle]
-    } else if (Array.isArray(this.config.buttonStyle) && this.config.buttons[this.config.buttonStyle[0]]) {
-      this.logoSelfies += this.config.buttons[this.config.buttonStyle[0]]
-    } else this.logoSelfies += this.config.buttons[1]
+    } else if (Array.isArray(this.config.buttonStyle) && this.config.buttons[this.config.buttonStyle[0]]) { // buttonStyle is an array [1,2,3] and verify the first number of the array
+      this.logoSelfies += this.config.buttons[this.config.buttonStyle[0]] // select the first number of the array
+    } else this.logoSelfies += "master.png" // fallback to master.png
   },
 
   getDom: function() {
@@ -89,7 +94,7 @@ Module.register("EXT-Selfies", {
         icon.id = "EXT-SELFIES-BUTTON"
         icon.className = "fa fa-camera fa-large"
         icon.classList.add("large")
-        if (this.config.blinkButton) icon.classList.add("flash")
+        if (this.config.blinkButton) icon.classList.add("flash") // active le flash sur le button unique ?
       }
       icon.addEventListener("click", () => this.shoot(this.config, session))
       wrapper.appendChild(icon)
@@ -153,22 +158,22 @@ Module.register("EXT-Selfies", {
       case "SHOOT_RESULT":
         this.postShoot(payload)
         break
-      case "ERROR":
+      case "ERROR": // will display error with EXT-Alert
         this.sendNotification("EXT_ALERT", {
           type: "error",
           message: payload,
         })
-        this.sendNotification("EXT_SELFIES-END")
+        this.sendNotification("EXT_SELFIES-END") // inform shoot ended
         this.IsShooting = false
         break
       case "SHOOTS_EMPTY":
-        this.sendNotification("EXT_SELFIES-CLEAN_STORE")
+        this.sendNotification("EXT_SELFIES-CLEAN_STORE") // inform there is no photos !
         break
       case "FLASH_ON":
-        this.sendNotification("EXT_SELFIESFLASH-ON")
+        this.sendNotification("EXT_SELFIESFLASH-ON") // send to EXT-SelfiesFlash
         break
       case "FLASH_OFF":
-        this.sendNotification("EXT_SELFIESFLASH-OFF")
+        this.sendNotification("EXT_SELFIESFLASH-OFF") // send to EXT-SelfiesFlash
         break
     }
   },
@@ -178,7 +183,7 @@ Module.register("EXT-Selfies", {
       case "DOM_OBJECTS_CREATED":
         this.prepare()
         break
-      case "GAv4_READY":
+      case "GAv4_READY": // send HELLO to Gateway ... (mark plugin as present in GW db)
         if (sender.name == "MMM-GoogleAssistant") this.sendNotification("EXT_HELLO", this.name)
         break
       case "EXT_SELFIES-SHOOT":
@@ -219,12 +224,8 @@ Module.register("EXT-Selfies", {
 
     if (this.config.displayButton) {
       var button = document.getElementById("EXT-SELFIES-BUTTON")
-      button.classList.add("hidden")
+      button.classList.add("hidden") // cache le boutton
     }
-    /** not defined in prepare !
-    var icon = document.querySelector("EXT-SELFIES-ICON")
-    icon.classList.toggle("shown")
-    **/
     con.classList.add("shown")
     win.classList.add("shown")
 
@@ -267,6 +268,7 @@ Module.register("EXT-Selfies", {
     if (autoValidate) {
       setTimeout(()=>{
         this.lastPhoto = result
+        this.sendSelfieTB(result)
         this.sendNotification("EXT_SELFIES-RESULT", result)
         this.closeDisplayer()
       }, this.config.resultDuration)
@@ -283,18 +285,13 @@ Module.register("EXT-Selfies", {
       this.sendSelfieTB(result) 
       this.sendNotification("EXT_SELFIES-RESULT", result)
       this.closeDisplayer()
-      this.refreshIcon()
     }
 
     var retryIcon = document.getElementById("EXT-SELFIES-RETRY")
     retryIcon.onclick = ()=> { 
-      this.sendSocketNotification("DELETE", result) // delete last result
+      this.sendSocketNotification("DELETE", result)
       this.closeDisplayer()
-      /** finaly it's auto reseted with Telegrambot!
-      this.session[result.session.key] = null
-      delete this.session[result.session.key]
-      **/
-      this.shoot(this.config, {}) // shoot again
+      this.shoot(this.config, {})
     }
 
     var exitIcon = document.getElementById("EXT-SELFIES-EXIT")
@@ -312,16 +309,9 @@ Module.register("EXT-Selfies", {
     if (pannel) pannel.classList.remove("shown")
     rd.classList.remove("shown")
     con.classList.remove("shown")
-    this.sendNotification("EXT_SELFIES-END") // inform GW Selfie is finish
-    if (this.config.displayButton) button.classList.remove("hidden")
+    this.sendNotification("EXT_SELFIES-END")
+    if (this.config.displayButton) button.classList.remove("hidden") // montre le boutton
     this.IsShooting = false
-  },
-
-  refreshIcon: function() {
-    /** not defined
-    var icon = document.getElementById("EXT-SELFIES-ICON")
-    icon.classList.toggle("shown")
-    **/
   },
 
  /** TelegramBot function **/

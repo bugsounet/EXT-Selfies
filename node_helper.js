@@ -99,11 +99,11 @@ module.exports = NodeHelper.create({
       verbose: this.config.debug
     }, (payload.options) ? payload.options : {})
 
-    this.sendSocketNotification("FLASH_ON")
+    this.sendSocketNotification("FLASH_ON") // infom main js with FLASH_ON for EXT-SelfiesFlash (before take shoot)
 
     NodeWebcam.capture(filename, opts, (err, data)=>{
-      this.sendSocketNotification("FLASH_OFF")
-      if (err || !fs.existsSync(data)) {
+      this.sendSocketNotification("FLASH_OFF") // infom main js with FLASH_OFF for EXT-SelfiesFlash (after take shoot)
+      if (err || !fs.existsSync(data)) { // verifie si erreur ou si le fichier n'as pas été créé (evite le crash)
         console.error("[SELFIES] Capture Error!", err ? err : "")
         this.sendSocketNotification("ERROR", "Webcam Capture Error!")
         return
@@ -123,7 +123,7 @@ module.exports = NodeHelper.create({
       fs.unlink(payload.path,
         err => {
           if (err) {
-            this.sendSocketNotification("ERROR", "Error when delete last shoot!")
+            this.sendSocketNotification("ERROR", "Error when delete last shoot!") // will inform user with EXT-Alert 
             return console.log("[SELFIES] Delete Error:", err)
           }
           log("File deleted:", payload.uri)
