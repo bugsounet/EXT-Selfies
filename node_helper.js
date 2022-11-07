@@ -4,6 +4,14 @@
 *  10/2022          *
 ********************/
 
+/** Todo:
+ * use onoff npm library for flash
+**/
+
+/** Warn:
+ * flash is now moved to EXT-SelfiesFlash !
+ **/
+
 const NodeWebcam = require( "node-webcam" );
 const moment = require("moment");
 const fs = require("fs");
@@ -63,10 +71,11 @@ module.exports = NodeHelper.create({
       case "EMPTY":
         var dir = path.resolve(__dirname, "photos")
         exec(`rm ${dir}/*.jpg`, (err, sto, ste)=>{
-          log("Cleaning directory:", dir)
-          if (err) console.error("[SELFIES] Cleaning directory Error:", err)
           if (sto) log("stdOut:", sto)
           if (ste) log("stdErr:", ste)
+          if (err) return console.error("[SELFIES] Cleaning directory Error:", err)
+          log("Cleaning directory:", dir)
+          this.sendSocketNotification("SHOOTS_EMPTY")
         })
         break
       case "DELETE":
@@ -89,8 +98,12 @@ module.exports = NodeHelper.create({
       callbackReturn: "location",
       verbose: this.config.debug
     }, (payload.options) ? payload.options : {})
+
+    this.sendSocketNotification("FLASH_ON") // infom main js with FLASH_ON for EXT-SelfiesFlash (before take shoot)
+
     NodeWebcam.capture(filename, opts, (err, data)=>{
-      if (err || !fs.existsSync(data)) {
+      this.sendSocketNotification("FLASH_OFF") // infom main js with FLASH_OFF for EXT-SelfiesFlash (after take shoot)
+      if (err || !fs.existsSync(data)) { // verifie si erreur ou si le fichier n'as pas été créé (evite le crash)
         console.error("[SELFIES] Capture Error!", err ? err : "")
         this.sendSocketNotification("ERROR", "Webcam Capture Error!")
         return
@@ -102,15 +115,15 @@ module.exports = NodeHelper.create({
         session: payload.session
       })
     })
+
   },
 
   deleteShoot: function(payload) {
-    console.log(payload)
     if (payload.path) {
       fs.unlink(payload.path,
         err => {
           if (err) {
-            this.sendSocketNotification("ERROR", "Error when delete last shoot!")
+            this.sendSocketNotification("ERROR", "Error when delete last shoot!") // will inform user with EXT-Alert 
             return console.log("[SELFIES] Delete Error:", err)
           }
           log("File deleted:", payload.uri)

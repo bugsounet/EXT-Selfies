@@ -6,13 +6,10 @@
 
 /** Warn: use `npm run update` for updating **/
 
-/** @todo:
- * decrease main background (master.png) size ?
- * toCode: buttonStyle value / array
- * autoValidate with telegrambot
+/** todo
+ * simplify TB function / move result to EXT-SelfiesSender (@bugsounet)
+ * maybe delete session ? (@bugsounet)
 **/
-
-/** good way ! **/
 
 Module.register("EXT-Selfies", {
   defaults: {
@@ -24,8 +21,15 @@ Module.register("EXT-Selfies", {
     shootMessage: "Smile!",
     shootCountdown: 5,
     displayButton: true,
-    buttonStyle: 1, // Set 1, 2, 3, 4, 5 --- // don't try to past a string as a number ;)
-    updateInterval: 7 * 1000, // *
+    buttonStyle: 1, // Set 1, 2, 3, 4 --- can be an array [1,2] for blinking --- 0 for default font-awesome icon (camera)
+    buttons: {
+      1: "master.png",
+      2: "halloween.png",
+      3: "birthday.png",
+      4: "christmas.png"
+    },
+    blinkButton: false,
+    updateInterval: 7 * 1000,
     animationSpeed: 3000,
     playShutter: true,
     shutterSound: "shutter.mp3",
@@ -39,72 +43,23 @@ Module.register("EXT-Selfies", {
     return ["EXT-Selfies.css", "font-awesome.css"]
   },
 
-  getCommands: function(commander) {
-    commander.add({
-      command: 'selfie',
-      callback: 'cmdSelfie',
-      description: "Take a selfie.",
-    })
-
-    commander.add({
-      command: 'emptyselfie',
-      callback: 'cmdEmptySelfie',
-      description: "Remove all selfie photos."
-    })
-
-    commander.add({
-      command: 'lastselfie',
-      callback: 'cmdLastSelfie',
-      description: 'Display the last selfie shot taken.'
-    })
-  },
-
-  cmdSelfie: function(command, handler) {
-    var countdown = null;
-    if (handler.args) countdown = handler.args
-    if (!countdown) countdown = this.config.shootCountdown
-    var session = Date.now()
-    this.session[session] = handler
-    this.shoot({shootCountdown:countdown}, {key:session, ext:"TELBOT"})
-  },
-
-  cmdSelfieResult: function(key, path) {
-    var handler = this.session[key]
-    handler.reply("PHOTO_PATH", path)
-    this.session[key] = null
-    delete this.session[key]
-  },
-
-  cmdLastSelfie: function(command, handler) {
-    if (this.lastPhoto) {
-      handler.reply("PHOTO_PATH", this.lastPhoto.path)
-      this.showLastPhoto(this.lastPhoto)
-    } else {
-      handler.reply("TEXT", "Couldn't find the last selfie.")
-    }
-  },
-
-  cmdEmptySelfie: function(command, handler) {
-    this.sendSocketNotification("EMPTY")
-    handler.reply("TEXT", "done.")
-  },
-
   start: function() {
+    this.IsShooting = false
     this.session = {}
     this.sendSocketNotification("INIT", this.config)
     this.lastPhoto = null
-    this.logoValidate = "/modules/EXT-Selfies/resources/validate.png"
-    this.logoExit = "/modules/EXT-Selfies/resources/exit.png"
-    this.logoRetry = "/modules/EXT-Selfies/resources/retry.png"
-    this.buttonUrls = {
-      1: "/modules/EXT-Selfies/resources/master.png",
-      2: "/modules/EXT-Selfies/resources/halloween.png",
-      3: "/modules/EXT-Selfies/resources/birthday.png",  
-      4: "/modules/EXT-Selfies/resources/christmas.png"
+    this.resourcesPatch = "/modules/EXT-Selfies/resources/"
+    this.logoSelfies = this.resourcesPatch
+    this.logo= {
+      Validate: this.resourcesPatch + "validate.png",
+      Exit: this.resourcesPatch + "exit.png",
+      Retry: this.resourcesPatch + "retry.png"
     }
-    if (this.config.buttonStyle && this.buttonUrls[this.config.buttonStyle]) {
-      this.logoSelfies = this.buttonUrls[this.config.buttonStyle]
-    } else this.logoSelfies = this.buttonUrls[1] 
+    if (this.config.buttonStyle && this.config.buttons[this.config.buttonStyle]) { // if buttonStyle is a number
+      this.logoSelfies += this.config.buttons[this.config.buttonStyle]
+    } else if (Array.isArray(this.config.buttonStyle) && this.config.buttons[this.config.buttonStyle[0]]) { // buttonStyle is an array [1,2,3] and verify the first number of the array
+      this.logoSelfies += this.config.buttons[this.config.buttonStyle[0]] // select the first number of the array
+    } else this.logoSelfies += "master.png" // fallback to master.png
   },
 
   getDom: function() {
@@ -115,12 +70,32 @@ Module.register("EXT-Selfies", {
       if (this.config.buttonStyle) { // buttonStyle > 1
         icon = document.createElement("div")
         icon.id = "EXT-SELFIES-BUTTON"
+        icon.classList.add("buttonStyle")
         icon.style.backgroundImage = `url(${this.logoSelfies})`
-        icon.classList.add("flash")
-      } else { // default camera fa icon
+
+        if (Array.isArray(this.config.buttonStyle)) { // buttonStyle is an array
+          icon.classList.add("uniqueFlash")
+          let nb = 0
+          icon.addEventListener('animationend', () => {
+            icon.classList.add("hidden")
+            icon.classList.remove("uniqueFlash")
+            nb++
+            if (nb > this.config.buttonStyle.length-1) nb = 0
+            setTimeout(() => {
+              icon.classList.add("uniqueFlash")
+              icon.style.backgroundImage = `url(${this.resourcesPatch + this.config.buttons[this.config.buttonStyle[nb]]})`
+              icon.classList.remove("hidden")
+            },1)
+          })
+        } else {
+          if (this.config.blinkButton) icon.classList.add("flash")
+        }
+      } else { // buttonStyle = 0
         icon = document.createElement("span")
+        icon.id = "EXT-SELFIES-BUTTON"
         icon.className = "fa fa-camera fa-large"
         icon.classList.add("large")
+        if (this.config.blinkButton) icon.classList.add("flash") // active le flash sur le button unique ?
       }
       icon.addEventListener("click", () => this.shoot(this.config, session))
       wrapper.appendChild(icon)
@@ -157,6 +132,7 @@ Module.register("EXT-Selfies", {
 		icon.classList.add("hidden")
     dom.appendChild(icon)
     
+
     var shutter = document.createElement("audio")
     shutter.classList.add("shutter")
     if (this.config.playShutter) {
@@ -167,20 +143,20 @@ Module.register("EXT-Selfies", {
     var validatePannel = document.createElement("div")
     validatePannel.id = "EXT-SELFIES-PANNEL"
 
-    var validateIcon = document.createElement("div")
-    validateIcon.id = "EXT-SELFIES-VALIDATE"
-    validateIcon.style.backgroundImage = `url(${this.logoValidate})`
-    validatePannel.appendChild(validateIcon)
+      var validateIcon = document.createElement("div")
+      validateIcon.id = "EXT-SELFIES-VALIDATE"
+      validateIcon.style.backgroundImage = `url(${this.logo.Validate})`
+      validatePannel.appendChild(validateIcon)
 
-    var retryIcon = document.createElement("div")
-    retryIcon.id = "EXT-SELFIES-RETRY"
-    retryIcon.style.backgroundImage = `url(${this.logoRetry})`
-    validatePannel.appendChild(retryIcon)
+      var retryIcon = document.createElement("div")
+      retryIcon.id = "EXT-SELFIES-RETRY"
+      retryIcon.style.backgroundImage = `url(${this.logo.Retry})`
+      validatePannel.appendChild(retryIcon)
 
-    var exitIcon = document.createElement("div")
-    exitIcon.id = "EXT-SELFIES-EXIT"
-    exitIcon.style.backgroundImage = `url(${this.logoExit})`
-    validatePannel.appendChild(exitIcon)
+      var exitIcon = document.createElement("div")
+      exitIcon.id = "EXT-SELFIES-EXIT"
+      exitIcon.style.backgroundImage = `url(${this.logo.Exit})`
+      validatePannel.appendChild(exitIcon)
 
     dom.appendChild(validatePannel)
     var result = document.createElement("result")
@@ -195,12 +171,22 @@ Module.register("EXT-Selfies", {
       case "SHOOT_RESULT":
         this.postShoot(payload)
         break
-      case "ERROR":
+      case "ERROR": // will display error with EXT-Alert
         this.sendNotification("EXT_ALERT", {
           type: "error",
           message: payload,
         })
-        this.sendNotification("EXT_SELFIES-END")
+        this.sendNotification("EXT_SELFIES-END") // inform shoot ended
+        this.IsShooting = false
+        break
+      case "SHOOTS_EMPTY":
+        this.sendNotification("EXT_SELFIES-CLEAN_STORE") // inform there is no photos !
+        break
+      case "FLASH_ON":
+        this.sendNotification("EXT_SELFIESFLASH-ON") // send to EXT-SelfiesFlash
+        break
+      case "FLASH_OFF":
+        this.sendNotification("EXT_SELFIESFLASH-OFF") // send to EXT-SelfiesFlash
         break
     }
   },
@@ -209,12 +195,12 @@ Module.register("EXT-Selfies", {
     switch(noti) {
       case "DOM_OBJECTS_CREATED":
         this.prepare()
-        //this.shoot()
         break
-      case "GAv4_READY":
+      case "GAv4_READY": // send HELLO to Gateway ... (mark plugin as present in GW db)
         if (sender.name == "MMM-GoogleAssistant") this.sendNotification("EXT_HELLO", this.name)
         break
       case "EXT_SELFIES-SHOOT":
+        if (this.IsShooting) return
         var session = {}
         var pl = {
           option: {},
@@ -230,16 +216,20 @@ Module.register("EXT-Selfies", {
         this.shoot(pl.option, session)
         break
       case "EXT_SELFIES-EMPTY_STORE":
+        if (this.IsShooting) return
         this.sendSocketNotification("EMPTY")
+        this.lastPhoto = null
         break
       case "EXT_SELFIES-LAST":
+        if (this.IsShooting) return
         this.showLastPhoto(this.lastPhoto, true)
         break
     }
   },
 
   shoot: function(option={}, session={}) {
-    this.sendNotification("EXT_SELFIES-START") 
+    this.sendNotification("EXT_SELFIES-START")
+    this.IsShooting = true
     var sound = (option.hasOwnProperty("playShutter")) ? option.playShutter : this.config.playShutter
     var countdown = (option.hasOwnProperty("shootCountdown")) ? option.shootCountdown : this.config.shootCountdown
     var con = document.querySelector("#EXT-SELFIES")
@@ -248,6 +238,11 @@ Module.register("EXT-Selfies", {
     var preview = document.querySelector("EXT-SELFIES .previews")
     icon.classList.toggle("shown") // masque le bouton durant le selfie ?
     
+
+    if (this.config.displayButton) {
+      var button = document.getElementById("EXT-SELFIES-BUTTON")
+      button.classList.add("hidden") // cache le boutton
+    }
     con.classList.add("shown")
     win.classList.add("shown")
     preview.classList.add("shown")  // montre la capture cam
@@ -274,12 +269,13 @@ Module.register("EXT-Selfies", {
   },
 
   postShoot: function(result) {
-    if (!this.config.autoValidate) this.validateSelfie(result)
+    if (!this.config.autoValidate && !result.session.ext) this.validateSelfie(result)
     else this.sendSelfieTB(result)
-    this.showLastPhoto(result, this.config.autoValidate)
+    this.showLastPhoto(result, result.session.ext ? true : this.config.autoValidate)
   },
 
   showLastPhoto: function(result, autoValidate= false) {
+    this.IsShooting = true
     if (this.config.debug) console.log("Showing last photo.")
     var con = document.querySelector("#EXT-SELFIES")
     con.classList.add("shown")
@@ -290,6 +286,8 @@ Module.register("EXT-Selfies", {
     if (autoValidate) {
       setTimeout(()=>{
         this.lastPhoto = result
+        this.sendSelfieTB(result)
+        this.sendNotification("EXT_SELFIES-RESULT", result)
         this.closeDisplayer()
       }, this.config.resultDuration)
     }
@@ -309,9 +307,9 @@ Module.register("EXT-Selfies", {
 
     var retryIcon = document.getElementById("EXT-SELFIES-RETRY")
     retryIcon.onclick = ()=> { 
-      this.sendSocketNotification("DELETE", result) //perfect i understand why node helper now
+      this.sendSocketNotification("DELETE", result)
       this.closeDisplayer()
-      this.shoot(this.config, {}) 
+      this.shoot(this.config, {})
     }
 
     var exitIcon = document.getElementById("EXT-SELFIES-EXIT")
@@ -325,11 +323,68 @@ Module.register("EXT-Selfies", {
     var con = document.querySelector("#EXT-SELFIES")
     var rd = document.querySelector("#EXT-SELFIES .result")
     var pannel = document.getElementById("EXT-SELFIES-PANNEL")
+    var button = document.getElementById("EXT-SELFIES-BUTTON")
     if (pannel) pannel.classList.remove("shown")
     rd.classList.remove("shown")
     con.classList.remove("shown")
-    icon.classList.remove("hidden")  // fera ré-apparaitre le boutton ??
     this.sendNotification("EXT_SELFIES-END")
+    if (this.config.displayButton) button.classList.remove("hidden") // montre le boutton
+    this.IsShooting = false
+  },
+
+ /** TelegramBot function **/
+   getCommands: function(commander) {
+    commander.add({
+      command: 'selfie',
+      callback: 'cmdSelfie',
+      description: "Take a selfie.",
+    })
+
+    commander.add({
+      command: 'emptyselfie',
+      callback: 'cmdEmptySelfie',
+      description: "Remove all selfie photos."
+    })
+
+    commander.add({
+      command: 'lastselfie',
+      callback: 'cmdLastSelfie',
+      description: 'Display the last selfie shot taken.'
+    })
+  },
+
+  cmdSelfie: function(command, handler) {
+    if (this.IsShooting) return handler.reply("TEXT", "Not available actually.")
+    var countdown = null
+    if (handler.args) countdown = handler.args
+    if (!countdown) countdown = this.config.shootCountdown
+    var session = Date.now()
+    this.session[session] = handler
+    this.shoot({shootCountdown:countdown}, {key:session, ext:"TELBOT"})
+  },
+
+  cmdSelfieResult: function(key, path) {
+    var handler = this.session[key]
+    handler.reply("PHOTO_PATH", path)
+    this.session[key] = null
+    delete this.session[key]
+  },
+
+  cmdLastSelfie: function(command, handler) {
+    if (this.IsShooting) return handler.reply("TEXT", "Not available actually.")
+    if (this.lastPhoto) {
+      handler.reply("PHOTO_PATH", this.lastPhoto.path)
+      this.showLastPhoto(this.lastPhoto, true)
+    } else {
+      handler.reply("TEXT", "Couldn't find the last selfie.")
+    }
+  },
+
+  cmdEmptySelfie: function(command, handler) {
+    if (this.IsShooting) return handler.reply("TEXT", "Not available actually.")
+    this.sendSocketNotification("EMPTY")
+    this.lastPhoto = null
+    handler.reply("TEXT", "done.")
   },
 
   sendSelfieTB: function(result) {
@@ -358,5 +413,5 @@ Module.register("EXT-Selfies", {
         this.sendNotification("TELBOT_TELL_ADMIN", "New Selfie")
       }
     }
-  }
+  },
 })
