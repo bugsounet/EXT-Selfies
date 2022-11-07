@@ -31,7 +31,8 @@ Module.register("EXT-Selfies", {
     shutterSound: "shutter.mp3",
     resultDuration: 1000 * 10,
     autoValidate: false,
-    sendTelegramBot: true
+    sendTelegramBot: true,
+    usePreview: false   // Fonction display capture
   },
 
   getStyles: function() {
@@ -145,6 +146,12 @@ Module.register("EXT-Selfies", {
     win.appendChild(count)
     dom.appendChild(win)
 
+    var preview = document.createElement("div") // créer l'element preview
+    preview.classList.add("preview")
+    preview.innerHTML = this.NodeWebcam.capture(filename, opts, (err, data))
+
+    dom.appendChild(preview)
+
     var icon = document.createElement("div")
 		icon.id = "EXT-SELFIES-BUTTON"
 		icon.classList.add("hidden")
@@ -238,10 +245,12 @@ Module.register("EXT-Selfies", {
     var con = document.querySelector("#EXT-SELFIES")
     var win = document.querySelector("#EXT-SELFIES .window")
     var icon = document.querySelector("EXT-SELFIES-ICON")
+    var preview = document.querySelector("EXT-SELFIES .previews")
     icon.classList.toggle("shown") // masque le bouton durant le selfie ?
     
     con.classList.add("shown")
     win.classList.add("shown")
+    preview.classList.add("shown")  // montre la capture cam
 
     const loop = (count) => {
       var c = document.querySelector("#EXT-SELFIES .count")
