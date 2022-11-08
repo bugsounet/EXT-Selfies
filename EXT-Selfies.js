@@ -36,11 +36,15 @@ Module.register("EXT-Selfies", {
     resultDuration: 1000 * 10,
     autoValidate: false,
     sendTelegramBot: true,
-    usePreview: false   // Fonction display capture
+    usePreview: true,   // Fonction display capture
   },
 
   getStyles: function() {
     return ["EXT-Selfies.css", "font-awesome.css"]
+  },
+
+  getScripts: function() {
+    return [ "/modules/EXT-Selfies/resources/webcam.min.js" ]
   },
 
   start: function() {
@@ -123,15 +127,12 @@ Module.register("EXT-Selfies", {
 
     var preview = document.createElement("div") // créer l'element preview
     preview.classList.add("preview")
-    preview.innerHTML = this.NodeWebcam.capture(filename, opts, (err, data))
-
     dom.appendChild(preview)
 
     var icon = document.createElement("div")
-		icon.id = "EXT-SELFIES-BUTTON"
-		icon.classList.add("hidden")
+    icon.id = "EXT-SELFIES-BUTTON"
+    icon.classList.add("hidden")
     dom.appendChild(icon)
-    
 
     var shutter = document.createElement("audio")
     shutter.classList.add("shutter")
@@ -164,6 +165,18 @@ Module.register("EXT-Selfies", {
     dom.appendChild(result)
 
     document.body.appendChild(dom)
+    /** init camera **/
+    if (this.config.usePreview) {
+      Webcam.set({ // set options
+        width: 320,
+        height: 180,
+        image_format: 'jpeg',
+        jpeg_quality: 100,
+        flip_horiz: true,
+        dest_width: 1280,
+        dest_height: 720,
+      })
+    }
   },
 
   socketNotificationReceived: function(noti, payload) {
@@ -177,6 +190,7 @@ Module.register("EXT-Selfies", {
           message: payload,
         })
         this.sendNotification("EXT_SELFIES-END") // inform shoot ended
+        this.closeDisplayer()
         this.IsShooting = false
         break
       case "SHOOTS_EMPTY":
@@ -234,10 +248,7 @@ Module.register("EXT-Selfies", {
     var countdown = (option.hasOwnProperty("shootCountdown")) ? option.shootCountdown : this.config.shootCountdown
     var con = document.querySelector("#EXT-SELFIES")
     var win = document.querySelector("#EXT-SELFIES .window")
-    var icon = document.querySelector("EXT-SELFIES-ICON")
-    var preview = document.querySelector("EXT-SELFIES .previews")
-    icon.classList.toggle("shown") // masque le bouton durant le selfie ?
-    
+    var preview = document.querySelector("#EXT-SELFIES .preview")
 
     if (this.config.displayButton) {
       var button = document.getElementById("EXT-SELFIES-BUTTON")
@@ -245,16 +256,25 @@ Module.register("EXT-Selfies", {
     }
     con.classList.add("shown")
     win.classList.add("shown")
-    preview.classList.add("shown")  // montre la capture cam
 
     const loop = (count) => {
       var c = document.querySelector("#EXT-SELFIES .count")
       c.innerHTML = count
       if (count == 0) {
-        this.sendSocketNotification("SHOOT", {
-          option: option,
-          session: session
-        })
+        if (this.config.usePreview) {
+          Webcam.snap(data_uri => { // take the shoot and ...
+            this.sendNotification("EXT_SELFIESFLASH-OFF") // send to EXT-SelfiesFlash
+            this.sendSocketNotification("SAVE", { // save the shoot
+              data: data_uri,
+              session: session
+            })
+          })
+        } else {
+          this.sendSocketNotification("SHOOT", {
+            option: option,
+            session: session
+          })
+        }
 
         var shutter = document.querySelector("#EXT-SELFIES .shutter")
         if (sound) shutter.play()
@@ -265,7 +285,16 @@ Module.register("EXT-Selfies", {
         }, 1000)
       }
     }
-    loop(countdown)
+    if (this.config.usePreview) {
+      preview.classList.add("shown")
+      Webcam.attach(preview) // display preview
+      Webcam.on('load', () => {
+        this.sendNotification("EXT_SELFIESFLASH-ON") // send to EXT-SelfiesFlash
+        loop(countdown)
+      })
+    } else {
+      loop(countdown)
+    }
   },
 
   postShoot: function(result) {
@@ -324,9 +353,16 @@ Module.register("EXT-Selfies", {
     var rd = document.querySelector("#EXT-SELFIES .result")
     var pannel = document.getElementById("EXT-SELFIES-PANNEL")
     var button = document.getElementById("EXT-SELFIES-BUTTON")
+    var preview = document.querySelector("#EXT-SELFIES .preview")
+    var c = document.querySelector("#EXT-SELFIES .count")
     if (pannel) pannel.classList.remove("shown")
     rd.classList.remove("shown")
     con.classList.remove("shown")
+    if (this.config.usePreview) {
+      preview.classList.remove("shown")
+      Webcam.reset() // free the camera
+    }
+    c.innerHTML = this.config.shootCountdown
     this.sendNotification("EXT_SELFIES-END")
     if (this.config.displayButton) button.classList.remove("hidden") // montre le boutton
     this.IsShooting = false

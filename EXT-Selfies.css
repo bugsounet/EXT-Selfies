@@ -66,19 +66,13 @@
 #EXT-SELFIES .preview {
   z-index: 0;
   position: absolute;
-  width: 70%;
-  height: 70%;
   top: 5%;
   left: 5%;
-  box-sizing: border-box;
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center center;
   display:none;
 }
 
 #EXT-SELFIES .preview.shown {
-display:block;
+  display:block;
 }
 
 #EXT-SELFIES .result {

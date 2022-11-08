@@ -17,6 +17,7 @@ const moment = require("moment");
 const fs = require("fs");
 const path = require("path");
 const exec = require("child_process").exec;
+const ba64 = require("ba64");
 
 var log = () => { /* do nothing */ };
 
@@ -70,7 +71,7 @@ module.exports = NodeHelper.create({
         break
       case "EMPTY":
         var dir = path.resolve(__dirname, "photos")
-        exec(`rm ${dir}/*.jpg`, (err, sto, ste)=>{
+        exec(`rm ${dir}/*.jpeg`, (err, sto, ste)=>{
           if (sto) log("stdOut:", sto)
           if (ste) log("stdErr:", ste)
           if (err) return console.error("[SELFIES] Cleaning directory Error:", err)
@@ -81,11 +82,28 @@ module.exports = NodeHelper.create({
       case "DELETE":
         this.deleteShoot(payload)
         break
+      case "SAVE":
+        this.base64ToJPGSave(payload)
+        break
     }
   },
 
+  base64ToJPGSave: function(payload) {
+    var uri = moment().format("YYMMDD_HHmmss")
+    var filename = path.resolve(__dirname, "photos", uri)
+    ba64.writeImage(filename, payload.data, err => {
+      if (err) throw err;
+      log("Image saved successfully");
+      this.sendSocketNotification("SHOOT_RESULT", {
+        path: filename + ".jpeg",
+        uri: uri + ".jpeg",
+        session: payload.session
+      })
+    })
+  },
+
   shoot: function(payload) {
-    var uri = moment().format("YYMMDD_HHmmss") + ".jpg"
+    var uri = moment().format("YYMMDD_HHmmss") + ".jpeg"
     var filename = path.resolve(__dirname, "photos", uri)
     var opts = Object.assign ({
       width: this.config.width,
