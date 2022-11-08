@@ -241,7 +241,7 @@ Module.register("EXT-Selfies", {
     }
   },
 
-  shoot: function(option={}, session={}) {
+  shoot: function(option={}, session={}, retry = false) { // need todo better (@bugsounet)
     this.sendNotification("EXT_SELFIES-START")
     this.IsShooting = true
     var sound = (option.hasOwnProperty("playShutter")) ? option.playShutter : this.config.playShutter
@@ -286,12 +286,17 @@ Module.register("EXT-Selfies", {
       }
     }
     if (this.config.usePreview) {
-      preview.classList.add("shown")
-      Webcam.attach(preview) // display preview
-      Webcam.on('load', () => {
-        this.sendNotification("EXT_SELFIESFLASH-ON") // send to EXT-SelfiesFlash
+      if (!retry) {
+        preview.classList.add("shown")
+        Webcam.attach(preview) // display preview
+        Webcam.on('load', () => {
+          this.sendNotification("EXT_SELFIESFLASH-ON") // send to EXT-SelfiesFlash
+          loop(countdown)
+        })
+      } else {
+        this.sendNotification("EXT_SELFIESFLASH-ON")
         loop(countdown)
-      })
+      }
     } else {
       loop(countdown)
     }
@@ -337,8 +342,8 @@ Module.register("EXT-Selfies", {
     var retryIcon = document.getElementById("EXT-SELFIES-RETRY")
     retryIcon.onclick = ()=> { 
       this.sendSocketNotification("DELETE", result)
-      this.closeDisplayer()
-      this.shoot(this.config, {})
+      this.retryDisplayer()
+      this.shoot(this.config, {}, true)
     }
 
     var exitIcon = document.getElementById("EXT-SELFIES-EXIT")
@@ -366,6 +371,17 @@ Module.register("EXT-Selfies", {
     this.sendNotification("EXT_SELFIES-END")
     if (this.config.displayButton) button.classList.remove("hidden") // montre le boutton
     this.IsShooting = false
+  },
+
+  retryDisplayer() {
+    var rd = document.querySelector("#EXT-SELFIES .result")
+    var pannel = document.getElementById("EXT-SELFIES-PANNEL")
+    var preview = document.querySelector("#EXT-SELFIES .preview")
+    var c = document.querySelector("#EXT-SELFIES .count")
+    if (pannel) pannel.classList.remove("shown")
+    rd.classList.remove("shown")
+    if (this.config.usePreview) preview.classList.add("shown")
+    c.innerHTML = this.config.shootCountdown
   },
 
  /** TelegramBot function **/
