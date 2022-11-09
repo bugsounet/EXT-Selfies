@@ -30,7 +30,7 @@
 }
 
 #EXT-SELFIES .window.shown {
-  display: flex;
+  /*display: flex;*/
 }
 
 #EXT-SELFIES .message {

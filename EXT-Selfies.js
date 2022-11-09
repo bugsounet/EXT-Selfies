@@ -41,7 +41,7 @@ Module.register("EXT-Selfies", {
   },
 
   getStyles: function() {
-    return ["EXT-Selfies.css", "font-awesome.css"]
+    return ["EXT-Selfies.css", "font-awesome.css", "testage.css", "openSans.css"]
   },
 
   getScripts: function() {
@@ -127,11 +127,25 @@ Module.register("EXT-Selfies", {
     var preview = document.createElement("div") // créer l'element preview
     preview.classList.add("preview")
     dom.appendChild(preview)
-
+    
+/*  On dirait Noupy ... il sert a rien [©Michael Youn]
     var icon = document.createElement("div")
     icon.id = "EXT-SELFIES-BUTTON"
     icon.classList.add("hidden")
     dom.appendChild(icon)
+*/
+
+    var test = document.createElement("div")
+    test.id = "EXT-SELFIES-TEST"
+    //test.classList.add("container")
+    dom.appendChild(test)
+    var testage = document.createElement("div")
+    testage.id = "EXT-SELFIES-TESTAGE"
+    //testage.classList.add("dot")
+    //testage.addEventListener("animationend" , (e) => {
+    //  console.log(e)
+    //})
+    test.appendChild(testage)
 
     var shutter = document.createElement("audio")
     shutter.classList.add("shutter")
@@ -240,6 +254,9 @@ Module.register("EXT-Selfies", {
     var con = document.querySelector("#EXT-SELFIES")
     var win = document.querySelector("#EXT-SELFIES .window")
     var preview = document.querySelector("#EXT-SELFIES .preview")
+    var test = document.getElementById("EXT-SELFIES-TEST")
+    var testage = document.getElementById("EXT-SELFIES-TESTAGE")
+    var shutter = document.querySelector("#EXT-SELFIES .shutter")
 
     if (this.config.displayButton) {
       var button = document.getElementById("EXT-SELFIES-BUTTON")
@@ -248,6 +265,7 @@ Module.register("EXT-Selfies", {
     con.classList.add("shown")
     win.classList.add("shown")
 
+/*
     const loop = (count) => {
       var c = document.querySelector("#EXT-SELFIES .count")
       c.innerHTML = count
@@ -275,24 +293,64 @@ Module.register("EXT-Selfies", {
         }, 1000)
       }
     }
+*/
+
     if (this.config.usePreview) {
       if (!retry) {
         preview.classList.add("shown")
         Webcam.attach(preview) // display preview
         Webcam.on('load', () => {
           this.sendNotification("EXT_SELFIESFLASH-ON") // send to EXT-SelfiesFlash
-          loop(countdown)
+          //loop(countdown)
+          test.classList.add("container")
+          testage.classList.add("dot")
+          testage.addEventListener("animationend" , (e) => {
+            if (sound) shutter.play()
+            test.classList.remove("container")
+            testage.classList.remove("dot")
+            Webcam.snap(data_uri => { // take the shoot and ...
+              this.sendNotification("EXT_SELFIESFLASH-OFF") // send to EXT-SelfiesFlash
+              this.sendSocketNotification("SAVE", { // save the shoot
+                data: data_uri,
+                option: option
+              })
+            })
+          }, {once: true})
         })
       } else {
         this.sendNotification("EXT_SELFIESFLASH-ON")
-        loop(countdown)
+        //loop(countdown)
+        test.classList.add("container")
+        testage.classList.add("dot")
+        testage.addEventListener("animationend" , () => {
+          if (sound) shutter.play()
+          test.classList.remove("container")
+          testage.classList.remove("dot")
+          Webcam.snap(data_uri => { // take the shoot and ...
+            this.sendNotification("EXT_SELFIESFLASH-OFF") // send to EXT-SelfiesFlash
+            this.sendSocketNotification("SAVE", { // save the shoot
+              data: data_uri,
+              option: option
+            })
+          })
+        }, {once: true})
       }
     } else {
-      loop(countdown)
+        test.classList.add("container")
+        testage.classList.add("dot")
+        testage.addEventListener("animationend" , (e) => {
+          if (sound) shutter.play()
+          test.classList.remove("container")
+          testage.classList.remove("dot")
+          this.sendSocketNotification("SHOOT", {
+            option: option
+          })
+        }, {once: true})
     }
   },
 
   postShoot: function(result) {
+    console.log(result)
     var autoValidation = (result.option.hasOwnProperty("autoValidate")) ? result.option.autoValidate:this.config.autoValidate
     if (!autoValidation) this.validateSelfie(result)
     this.showLastPhoto(result, autoValidation)
