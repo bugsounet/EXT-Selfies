@@ -99,7 +99,7 @@ module.exports = NodeHelper.create({
       this.sendSocketNotification("SHOOT_RESULT", {
         path: filename + ".jpeg",
         uri: uri + ".jpeg",
-        session: payload.session
+        option: payload.option
       })
     })
   },
@@ -109,8 +109,8 @@ module.exports = NodeHelper.create({
     var uri = moment().format("YYMMDD_HHmmss") + ".jpeg"
     var filename = path.resolve(__dirname, "photos", uri)
     var opts = Object.assign ({
-      width: this.config.width,
-      height: this.config.height,
+      width: this.config.captureWidth,
+      height: this.config.captureHeight,
       quality: 100,
       delay: 0,
       saveShots: true,
@@ -132,8 +132,7 @@ module.exports = NodeHelper.create({
       log("Photo is taken:", data)
       this.sendSocketNotification("SHOOT_RESULT", {
         path: data,
-        uri: uri,
-        session: payload.session
+        uri: uri
       })
     })
 

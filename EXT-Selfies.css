@@ -38,14 +38,16 @@
   font-size: 30px;    
   font-weight:bold;
   color: #37f713;
+  /* really needed ?
   text-shadow:
     0 0 7px #37f713,
     0 0 10px #37f713,
     0 0 21px #37f713,
     0 0 42px #37f713,
     0 0 82px #0fa,
-    0 0 92px 
+    0 0 92px
     0 0 102px #0fa;
+    */
   height:60px;
 }
 
@@ -54,11 +56,13 @@
   font-size:180px;
   font-weight:bold;
   color:#37f713;
+  /* really needed ?
   text-shadow:
     0 0 7px #37f713,
     0 0 10px #37f713,
     0 0 21px #37f713,
     0 0 42px #0fa,;
+  */
   height: 200px;
   line-height: 80%;
 }
@@ -66,9 +70,10 @@
 #EXT-SELFIES .preview {
   z-index: 0;
   position: absolute;
-  top: 5%;
-  left: 5%;
+  top: 50px;
+  left: 50px;
   display:none;
+  border-style: double;
 }
 
 #EXT-SELFIES .preview.shown {

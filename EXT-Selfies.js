@@ -6,18 +6,18 @@
 
 /** Warn: use `npm run update` for updating **/
 
-/** todo
- * simplify TB function / move result to EXT-SelfiesSender (@bugsounet)
- * maybe delete session ? (@bugsounet)
-**/
+/** @todo:
+ * rewrite TB functions (/selfie, /emptyselfie, /lastselfie)
+ * OR move it to EXT-SelfiesXXX ?? with mail,googlephoto,and telegram ?
+ **/
 
 Module.register("EXT-Selfies", {
   defaults: {
     debug: false,
-    width:1280,
-    height:720, // In some webcams, resolution ratio might be fixed so these values might not be applied.
-    device: null, // For default camera. Or,
-    // device: "USB Camera" <-- See the backend log to get your installed camera name.
+    captureWidth:1280,
+    captureHeight:720, // In some webcams, resolution ratio might be fixed so these values might not be applied.
+    device: null, // For default camera. Or, device: "USB Camera" <-- See the backend log to get your installed camera name.
+    // device is only used if preview not used
     shootMessage: "Smile!",
     shootCountdown: 5,
     displayButton: true,
@@ -35,8 +35,9 @@ Module.register("EXT-Selfies", {
     shutterSound: "shutter.mp3",
     resultDuration: 1000 * 10,
     autoValidate: false,
-    sendTelegramBot: true,
     usePreview: true,   // Fonction display capture
+    previewWidth:640,
+    previewHeight:360
   },
 
   getStyles: function() {
@@ -49,7 +50,6 @@ Module.register("EXT-Selfies", {
 
   start: function() {
     this.IsShooting = false
-    this.session = {}
     this.sendSocketNotification("INIT", this.config)
     this.lastPhoto = null
     this.resourcesPatch = "/modules/EXT-Selfies/resources/"
@@ -68,7 +68,6 @@ Module.register("EXT-Selfies", {
 
   getDom: function() {
     var wrapper = document.createElement("div")
-    var session = {}
     if (this.config.displayButton) {
       var icon // define icon as var
       if (this.config.buttonStyle) { // buttonStyle > 1
@@ -101,7 +100,7 @@ Module.register("EXT-Selfies", {
         icon.classList.add("large")
         if (this.config.blinkButton) icon.classList.add("flash") // active le flash sur le button unique ?
       }
-      icon.addEventListener("click", () => this.shoot(this.config, session))
+      icon.addEventListener("click", () => this.shoot(this.config))
       wrapper.appendChild(icon)
     } else wrapper.style.display = 'none'
     return wrapper
@@ -168,13 +167,13 @@ Module.register("EXT-Selfies", {
     /** init camera **/
     if (this.config.usePreview) {
       Webcam.set({ // set options
-        width: 320,
-        height: 180,
+        width: this.config.previewWidth,
+        height: this.config.previewHeight,
         image_format: 'jpeg',
         jpeg_quality: 100,
         flip_horiz: true,
-        dest_width: 1280,
-        dest_height: 720,
+        dest_width: this.config.captureWidth,
+        dest_height: this.config.captureHeight
       })
     }
   },
@@ -215,19 +214,11 @@ Module.register("EXT-Selfies", {
         break
       case "EXT_SELFIES-SHOOT":
         if (this.IsShooting) return
-        var session = {}
         var pl = {
-          option: {},
-          callback:null,
+          option: {}
         }
         pl = Object.assign({}, pl, payload)
-        if (typeof pl.callback == "function") {
-          key = Date.now() + Math.round(Math.random() * 1000)
-          this.session[key] = pl.callback
-          session["key"] = key
-          session["ext"] = "CALLBACK"
-        }
-        this.shoot(pl.option, session)
+        this.shoot(pl.option)
         break
       case "EXT_SELFIES-EMPTY_STORE":
         if (this.IsShooting) return
@@ -235,13 +226,13 @@ Module.register("EXT-Selfies", {
         this.lastPhoto = null
         break
       case "EXT_SELFIES-LAST":
-        if (this.IsShooting) return
+        if (this.IsShooting || !this.lastPhoto) return
         this.showLastPhoto(this.lastPhoto, true)
         break
     }
   },
 
-  shoot: function(option={}, session={}, retry = false) { // need todo better (@bugsounet)
+  shoot: function(option={}, retry = false) { // need todo better (@bugsounet)
     this.sendNotification("EXT_SELFIES-START")
     this.IsShooting = true
     var sound = (option.hasOwnProperty("playShutter")) ? option.playShutter : this.config.playShutter
@@ -266,13 +257,12 @@ Module.register("EXT-Selfies", {
             this.sendNotification("EXT_SELFIESFLASH-OFF") // send to EXT-SelfiesFlash
             this.sendSocketNotification("SAVE", { // save the shoot
               data: data_uri,
-              session: session
+              option: option
             })
           })
         } else {
           this.sendSocketNotification("SHOOT", {
-            option: option,
-            session: session
+            option: option
           })
         }
 
@@ -303,14 +293,13 @@ Module.register("EXT-Selfies", {
   },
 
   postShoot: function(result) {
-    if (!this.config.autoValidate && !result.session.ext) this.validateSelfie(result)
-    else this.sendSelfieTB(result)
-    this.showLastPhoto(result, result.session.ext ? true : this.config.autoValidate)
+    var autoValidation = (result.option.hasOwnProperty("autoValidate")) ? result.option.autoValidate:this.config.autoValidate
+    if (!autoValidation) this.validateSelfie(result)
+    this.showLastPhoto(result, autoValidation)
   },
 
   showLastPhoto: function(result, autoValidate= false) {
     this.IsShooting = true
-    if (this.config.debug) console.log("Showing last photo.")
     var con = document.querySelector("#EXT-SELFIES")
     con.classList.add("shown")
     var rd = document.querySelector("#EXT-SELFIES .result")
@@ -320,7 +309,6 @@ Module.register("EXT-Selfies", {
     if (autoValidate) {
       setTimeout(()=>{
         this.lastPhoto = result
-        this.sendSelfieTB(result)
         this.sendNotification("EXT_SELFIES-RESULT", result)
         this.closeDisplayer()
       }, this.config.resultDuration)
@@ -328,13 +316,14 @@ Module.register("EXT-Selfies", {
   },
 
   validateSelfie: function(result) {
+    var preview = document.querySelector("#EXT-SELFIES .preview")
+    preview.classList.remove("shown")
     var pannel = document.getElementById("EXT-SELFIES-PANNEL")
     pannel.classList.add("shown")
 
     var validateIcon = document.getElementById("EXT-SELFIES-VALIDATE")
     validateIcon.onclick = ()=> {
       this.lastPhoto = result
-      this.sendSelfieTB(result) 
       this.sendNotification("EXT_SELFIES-RESULT", result)
       this.closeDisplayer()
     }
@@ -343,7 +332,7 @@ Module.register("EXT-Selfies", {
     retryIcon.onclick = ()=> { 
       this.sendSocketNotification("DELETE", result)
       this.retryDisplayer()
-      this.shoot(this.config, {}, true)
+      this.shoot(result.option, true)
     }
 
     var exitIcon = document.getElementById("EXT-SELFIES-EXIT")
@@ -363,7 +352,7 @@ Module.register("EXT-Selfies", {
     if (pannel) pannel.classList.remove("shown")
     rd.classList.remove("shown")
     con.classList.remove("shown")
-    if (this.config.usePreview) {
+    if (this.config.usePreview && Webcam.live) {
       preview.classList.remove("shown")
       Webcam.reset() // free the camera
     }
@@ -385,6 +374,7 @@ Module.register("EXT-Selfies", {
   },
 
  /** TelegramBot function **/
+ /*
    getCommands: function(commander) {
     commander.add({
       command: 'selfie',
@@ -465,5 +455,6 @@ Module.register("EXT-Selfies", {
         this.sendNotification("TELBOT_TELL_ADMIN", "New Selfie")
       }
     }
-  },
+  }
+*/
 })
