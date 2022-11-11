@@ -1,7 +1,7 @@
 {
   "name": "EXT-Selfies",
   "version": "1.0.0",
-  "rev": "221108",
+  "rev": "221111",
   "description": "take selfies from webcam",
   "main": "EXT-Selfies.js",
   "scripts": {

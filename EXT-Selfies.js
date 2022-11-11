@@ -18,8 +18,9 @@ Module.register("EXT-Selfies", {
     captureHeight:720, // In some webcams, resolution ratio might be fixed so these values might not be applied.
     device: null, // For default camera. Or, device: "USB Camera" <-- See the backend log to get your installed camera name.
     // device is only used if preview not used
-    shootMessage: "Smile!",
-    shootCountdown: 5,
+    usePreview: true,
+    previewWidth:640,
+    previewHeight:360,
     displayButton: true,
     buttonStyle: 1, // Set 1, 2, 3, 4 --- can be an array [1,2] for blinking --- 0 for default font-awesome icon (camera)
     buttons: {
@@ -29,19 +30,17 @@ Module.register("EXT-Selfies", {
       4: "christmas.png"
     },
     blinkButton: false,
-    updateInterval: 7 * 1000,
-    animationSpeed: 3000,
     playShutter: true,
     shutterSound: "shutter.mp3",
     resultDuration: 1000 * 10,
     autoValidate: false,
-    usePreview: true,   // Fonction display capture
-    previewWidth:640,
-    previewHeight:360
+    counterStyle: 1
   },
 
   getStyles: function() {
-    return ["EXT-Selfies.css", "font-awesome.css", "testage.css"]
+    let defaultStyle = ["EXT-Selfies.css", "font-awesome.css"]
+    defaultStyle.push(this.defineCSSFile())
+    return defaultStyle
   },
 
   getScripts: function() {
@@ -52,6 +51,54 @@ Module.register("EXT-Selfies", {
     this.IsShooting = false
     this.sendSocketNotification("INIT", this.config)
     this.lastPhoto = null
+    /** 1: google
+      *  2:
+      *  3:
+     **/
+    this.counterStyleCSS= {
+      1: "google.css",
+      2: "",
+      3: ""
+    }
+
+    this.counterStyleHTML = {
+      1: `
+  <div class="google__colored-blocks">
+    <div class="google__colored-blocks-rotater">
+      <div class="google__colored-block"></div>
+      <div class="google__colored-block"></div>
+      <div class="google__colored-block"></div>
+      <div class="google__colored-block"></div>
+    </div>
+    <div class="google__colored-blocks-inner"></div>
+    <div class="google__text">Smiles!</div>
+  </div>
+  <div class="google__inner">
+    <svg class="google__numbers" viewBox="0 0 100 100">
+      <defs>
+        <path class="google__num-path-1" d="M40,28 55,22 55,78"/>
+        <path class="google__num-join-1-2" d="M55,78 55,83 a17,17 0 1,0 34,0 a20,10 0 0,0 -20,-10"/>
+        <path class="google__num-path-2" d="M69,73 l-35,0 l30,-30 a16,16 0 0,0 -22.6,-22.6 l-7,7"/>
+        <path class="google__num-join-2-3" d="M28,69 Q25,44 34.4,27.4"/>
+        <path class="google__num-path-3" d="M30,20 60,20 40,50 a18,15 0 1,1 -12,19"/>
+      </defs>
+      <path class="google__numbers-path" 
+            d="M-10,20 60,20 40,50 a18,15 0 1,1 -12,19 
+               Q25,44 34.4,27.4
+               l7,-7 a16,16 0 0,1 22.6,22.6 l-30,30 l35,0 L69,73 
+               a20,10 0 0,1 20,10 a17,17 0 0,1 -34,0 L55,83 
+               l0,-61 L40,28" />
+    </svg>
+  </div>
+`,
+      2: `
+      
+      `,
+      3: `
+      
+      `
+    }
+    this.counterStyle = 1
     this.resourcesPatch = "/modules/EXT-Selfies/resources/"
     this.logoSelfies = this.resourcesPatch
     this.logo= {
@@ -64,6 +111,9 @@ Module.register("EXT-Selfies", {
     } else if (Array.isArray(this.config.buttonStyle) && this.config.buttons[this.config.buttonStyle[0]]) { // buttonStyle is an array [1,2,3] and verify the first number of the array
       this.logoSelfies += this.config.buttons[this.config.buttonStyle[0]] // select the first number of the array
     } else this.logoSelfies += "master.png" // fallback to master.png
+    if (this.config.counterStyle && this.counterStyleHTML[this.config.counterStyle]) {
+      this.counterStyle = this.counterStyleHTML[this.config.counterStyle]
+    } else this.counterStyle = this.counterStyleHTML[1]
   },
 
   getDom: function() {
@@ -111,59 +161,18 @@ Module.register("EXT-Selfies", {
     var dom = document.createElement("div")
     dom.id = "EXT-SELFIES"
 
-    var win = document.createElement("div")
-    win.classList.add("window")
-    var message = document.createElement("div")
-    message.classList.add("message")
-    message.innerHTML = this.config.shootMessage
-    var count = document.createElement("div")
-    count.classList.add("count")
-    count.innerHTML = this.config.shootCountdown
-
-    win.appendChild(message)
-    win.appendChild(count)
-    dom.appendChild(win)
-
     var preview = document.createElement("div") // créer l'element preview
     preview.classList.add("preview")
     dom.appendChild(preview)
     
-    var test = document.createElement("div")
-    test.id = "EXT-SELFIES-TEST"
-    dom.appendChild(test)
-    var testage = document.createElement("div")
-    testage.id = "EXT-SELFIES-TESTAGE" // mode féniasse ...
-    testage.classList.add("google")
-    testage.innerHTML = `
-  <div class="google__colored-blocks">
-    <div class="google__colored-blocks-rotater">
-      <div class="google__colored-block"></div>
-      <div class="google__colored-block"></div>
-      <div class="google__colored-block"></div>
-      <div class="google__colored-block"></div>
-    </div>
-    <div class="google__colored-blocks-inner"></div>
-    <div class="google__text">Smiles!</div>
-  </div>
-  <div class="google__inner">
-    <svg class="google__numbers" viewBox="0 0 100 100">
-      <defs>
-        <path class="google__num-path-1" d="M40,28 55,22 55,78"/>
-        <path class="google__num-join-1-2" d="M55,78 55,83 a17,17 0 1,0 34,0 a20,10 0 0,0 -20,-10"/>
-        <path class="google__num-path-2" d="M69,73 l-35,0 l30,-30 a16,16 0 0,0 -22.6,-22.6 l-7,7"/>
-        <path class="google__num-join-2-3" d="M28,69 Q25,44 34.4,27.4"/>
-        <path class="google__num-path-3" d="M30,20 60,20 40,50 a18,15 0 1,1 -12,19"/>
-      </defs>
-      <path class="google__numbers-path" 
-            d="M-10,20 60,20 40,50 a18,15 0 1,1 -12,19 
-               Q25,44 34.4,27.4
-               l7,-7 a16,16 0 0,1 22.6,22.6 l-30,30 l35,0 L69,73 
-               a20,10 0 0,1 20,10 a17,17 0 0,1 -34,0 L55,83 
-               l0,-61 L40,28" />
-    </svg>
-  </div>
-`
-    test.appendChild(testage)
+    var animate = document.createElement("div")
+    animate.id = "EXT-SELFIES-ANIMATE"
+    dom.appendChild(animate)
+    var animatedCounter = document.createElement("div")
+    animatedCounter.id = "EXT-SELFIES-COUNTER"
+    animatedCounter.classList.add("google")
+    animatedCounter.innerHTML = this.counterStyle
+    animate.appendChild(animatedCounter)
 
     var shutter = document.createElement("audio")
     shutter.classList.add("shutter")
@@ -270,10 +279,9 @@ Module.register("EXT-Selfies", {
     var sound = (option.hasOwnProperty("playShutter")) ? option.playShutter : this.config.playShutter
     var countdown = (option.hasOwnProperty("shootCountdown")) ? option.shootCountdown : this.config.shootCountdown
     var con = document.querySelector("#EXT-SELFIES")
-    var win = document.querySelector("#EXT-SELFIES .window")
     var preview = document.querySelector("#EXT-SELFIES .preview")
-    var test = document.getElementById("EXT-SELFIES-TEST")
-    var testage = document.getElementById("EXT-SELFIES-TESTAGE")
+    var animate = document.getElementById("EXT-SELFIES-ANIMATE")
+    var animatedCounter = document.getElementById("EXT-SELFIES-COUNTER")
     var shutter = document.querySelector("#EXT-SELFIES .shutter")
 
     if (this.config.displayButton) {
@@ -281,55 +289,58 @@ Module.register("EXT-Selfies", {
       button.classList.add("hidden") // cache le boutton
     }
     con.classList.add("shown")
-    win.classList.add("shown")
 
-    if (this.config.usePreview) {
-      if (!retry) {
+    if (this.config.usePreview) { // need preview ?
+
+      if (retry) { // need to retry the shoot ? (don't re-init camera)
+        this.sendNotification("EXT_SELFIESFLASH-ON")
+        animate.classList.add("shown")
+        animatedCounter.addEventListener("animationend" , (e) => {
+          if (e.animationName != "googleAnim") return // ignore others
+          if (sound) shutter.play()
+          Webcam.snap(data_uri => {
+            animate.classList.remove("shown")
+            this.sendNotification("EXT_SELFIESFLASH-OFF")
+            this.sendSocketNotification("SAVE", {
+              data: data_uri,
+              option: option
+            })
+          })
+        }, {once: true}) // don't duplicate EventListener !
+
+      } else { // take the shoot
         preview.classList.add("shown")
-        Webcam.attach(preview) // display preview
+        Webcam.attach(preview)
         Webcam.on('load', () => {
-          this.sendNotification("EXT_SELFIESFLASH-ON") // send to EXT-SelfiesFlash
-          test.classList.add("shown")
-          testage.addEventListener("animationend" , (e) => {
+          this.sendNotification("EXT_SELFIESFLASH-ON")
+          animate.classList.add("shown")
+          animatedCounter.addEventListener("animationend" , (e) => {
             if (e.animationName != "googleAnim") return // ignore others
             if (sound) shutter.play()
-            Webcam.snap(data_uri => { // take the shoot and ...
-              test.classList.remove("shown")
-              this.sendNotification("EXT_SELFIESFLASH-OFF") // send to EXT-SelfiesFlash
-              this.sendSocketNotification("SAVE", { // save the shoot
+            Webcam.snap(data_uri => {
+              animate.classList.remove("shown")
+              this.sendNotification("EXT_SELFIESFLASH-OFF")
+              this.sendSocketNotification("SAVE", {
                 data: data_uri,
                 option: option
               })
             })
           }, {once: true})
         })
-      } else {
-        this.sendNotification("EXT_SELFIESFLASH-ON")
-        test.classList.add("shown")
-        testage.addEventListener("animationend" , (e) => {
-          if (e.animationName != "googleAnim") return // ignore others
-          if (sound) shutter.play()
-          Webcam.snap(data_uri => { // take the shoot and ...
-            test.classList.remove("shown")
-            this.sendNotification("EXT_SELFIESFLASH-OFF") // send to EXT-SelfiesFlash
-            this.sendSocketNotification("SAVE", { // save the shoot
-              data: data_uri,
-              option: option
-            })
-          })
-        }, {once: true})
       }
-    } else {
-        test.classList.add("shown")
-        testage.addEventListener("animationend" , (e) => {
-          if (e.animationName != "googleAnim") return // ignore others
-          if (sound) shutter.play()
-          this.sendSocketNotification("SHOOT", {
-            option: option
-          })
-          test.classList.remove("shown")
-        }, {once: true})
+
+    } else { // with no preview
+      animate.classList.add("shown")
+      animatedCounter.addEventListener("animationend" , (e) => {
+        if (e.animationName != "googleAnim") return // ignore others
+        if (sound) shutter.play()
+        this.sendSocketNotification("SHOOT", {
+          option: option
+        })
+        animate.classList.remove("shown")
+      }, {once: true})
     }
+
   },
 
   postShoot: function(result) {
@@ -388,7 +399,6 @@ Module.register("EXT-Selfies", {
     var pannel = document.getElementById("EXT-SELFIES-PANNEL")
     var button = document.getElementById("EXT-SELFIES-BUTTON")
     var preview = document.querySelector("#EXT-SELFIES .preview")
-    var c = document.querySelector("#EXT-SELFIES .count")
     if (pannel) pannel.classList.remove("shown")
     rd.classList.remove("shown")
     con.classList.remove("shown")
@@ -396,20 +406,26 @@ Module.register("EXT-Selfies", {
       preview.classList.remove("shown")
       Webcam.reset() // free the camera
     }
-    c.innerHTML = this.config.shootCountdown
     this.sendNotification("EXT_SELFIES-END")
     if (this.config.displayButton) button.classList.remove("hidden") // montre le boutton
     this.IsShooting = false
   },
 
-  retryDisplayer() {
+  retryDisplayer: function () {
     var rd = document.querySelector("#EXT-SELFIES .result")
     var pannel = document.getElementById("EXT-SELFIES-PANNEL")
     var preview = document.querySelector("#EXT-SELFIES .preview")
-    var c = document.querySelector("#EXT-SELFIES .count")
     if (pannel) pannel.classList.remove("shown")
     rd.classList.remove("shown")
     if (this.config.usePreview) preview.classList.add("shown")
-    c.innerHTML = this.config.shootCountdown
+  },
+  
+  defineCSSFile: function () {
+    let counterStyleCSS= {
+      1: "/modules/EXT-Selfies/resources/google.css",
+      2: "test1.css",
+      3: "test2.css"
+    }
+    return counterStyleCSS[this.config.counterStyle] || counterStyleCSS[1]
   }
 })

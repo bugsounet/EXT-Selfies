@@ -12,61 +12,6 @@
   display:block;
 }
 
-#EXT-SELFIES .window {
-  position:absolute;
-  width: 400px;
-  height: 400px;
-  top: calc((100% - 400px) / 2);
-  left: calc((100% - 400px) / 2);
-  box-sizing:border-box;
-  border: 10px solid #FFF;
-  background-color: Black;
-  padding:20px;
-  text-align:center;
-  border-radius: 20px;
-  display:none;
-  flex-direction:column;
-  justify-content: space-around;
-}
-
-#EXT-SELFIES .window.shown {
-  /*display: flex;*/
-}
-
-#EXT-SELFIES .message {
-  font-family: cursive, 'Pacifico';
-  font-size: 30px;    
-  font-weight:bold;
-  color: #37f713;
-  /* really needed ?
-  text-shadow:
-    0 0 7px #37f713,
-    0 0 10px #37f713,
-    0 0 21px #37f713,
-    0 0 42px #37f713,
-    0 0 82px #0fa,
-    0 0 92px
-    0 0 102px #0fa;
-    */
-  height:60px;
-}
-
-#EXT-SELFIES .count {
-  font-family: cursive, 'Pacifico';
-  font-size:180px;
-  font-weight:bold;
-  color:#37f713;
-  /* really needed ?
-  text-shadow:
-    0 0 7px #37f713,
-    0 0 10px #37f713,
-    0 0 21px #37f713,
-    0 0 42px #0fa,;
-  */
-  height: 200px;
-  line-height: 80%;
-}
-
 #EXT-SELFIES .preview {
   z-index: 0;
   position: absolute;
@@ -121,10 +66,10 @@
 
 #EXT-SELFIES-BUTTON.flash {
   opacity: 0;
-  animation: flash normal 2s infinite ease-in;
+  animation: blinkButton normal 2s infinite ease-in;
 }
 
-@keyframes flash {
+@keyframes blinkButton {
   0% {
       opacity:0;
   }
