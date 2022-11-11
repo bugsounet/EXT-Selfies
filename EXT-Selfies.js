@@ -41,7 +41,7 @@ Module.register("EXT-Selfies", {
   },
 
   getStyles: function() {
-    return ["EXT-Selfies.css", "font-awesome.css", "testage.css", "openSans.css"]
+    return ["EXT-Selfies.css", "font-awesome.css", "testage.css"]
   },
 
   getScripts: function() {
@@ -128,23 +128,41 @@ Module.register("EXT-Selfies", {
     preview.classList.add("preview")
     dom.appendChild(preview)
     
-/*  On dirait Noupy ... il sert a rien [©Michael Youn]
-    var icon = document.createElement("div")
-    icon.id = "EXT-SELFIES-BUTTON"
-    icon.classList.add("hidden")
-    dom.appendChild(icon)
-*/
-
     var test = document.createElement("div")
     test.id = "EXT-SELFIES-TEST"
-    //test.classList.add("container")
     dom.appendChild(test)
     var testage = document.createElement("div")
-    testage.id = "EXT-SELFIES-TESTAGE"
-    //testage.classList.add("dot")
-    //testage.addEventListener("animationend" , (e) => {
-    //  console.log(e)
-    //})
+    testage.id = "EXT-SELFIES-TESTAGE" // mode féniasse ...
+    testage.classList.add("google")
+    testage.innerHTML = `
+  <div class="google__colored-blocks">
+    <div class="google__colored-blocks-rotater">
+      <div class="google__colored-block"></div>
+      <div class="google__colored-block"></div>
+      <div class="google__colored-block"></div>
+      <div class="google__colored-block"></div>
+    </div>
+    <div class="google__colored-blocks-inner"></div>
+    <div class="google__text">Smiles!</div>
+  </div>
+  <div class="google__inner">
+    <svg class="google__numbers" viewBox="0 0 100 100">
+      <defs>
+        <path class="google__num-path-1" d="M40,28 55,22 55,78"/>
+        <path class="google__num-join-1-2" d="M55,78 55,83 a17,17 0 1,0 34,0 a20,10 0 0,0 -20,-10"/>
+        <path class="google__num-path-2" d="M69,73 l-35,0 l30,-30 a16,16 0 0,0 -22.6,-22.6 l-7,7"/>
+        <path class="google__num-join-2-3" d="M28,69 Q25,44 34.4,27.4"/>
+        <path class="google__num-path-3" d="M30,20 60,20 40,50 a18,15 0 1,1 -12,19"/>
+      </defs>
+      <path class="google__numbers-path" 
+            d="M-10,20 60,20 40,50 a18,15 0 1,1 -12,19 
+               Q25,44 34.4,27.4
+               l7,-7 a16,16 0 0,1 22.6,22.6 l-30,30 l35,0 L69,73 
+               a20,10 0 0,1 20,10 a17,17 0 0,1 -34,0 L55,83 
+               l0,-61 L40,28" />
+    </svg>
+  </div>
+`
     test.appendChild(testage)
 
     var shutter = document.createElement("audio")
@@ -265,50 +283,18 @@ Module.register("EXT-Selfies", {
     con.classList.add("shown")
     win.classList.add("shown")
 
-/*
-    const loop = (count) => {
-      var c = document.querySelector("#EXT-SELFIES .count")
-      c.innerHTML = count
-      if (count == 0) {
-        if (this.config.usePreview) {
-          Webcam.snap(data_uri => { // take the shoot and ...
-            this.sendNotification("EXT_SELFIESFLASH-OFF") // send to EXT-SelfiesFlash
-            this.sendSocketNotification("SAVE", { // save the shoot
-              data: data_uri,
-              option: option
-            })
-          })
-        } else {
-          this.sendSocketNotification("SHOOT", {
-            option: option
-          })
-        }
-
-        var shutter = document.querySelector("#EXT-SELFIES .shutter")
-        if (sound) shutter.play()
-      } else {
-        setTimeout(()=>{
-          count--
-          loop(count)
-        }, 1000)
-      }
-    }
-*/
-
     if (this.config.usePreview) {
       if (!retry) {
         preview.classList.add("shown")
         Webcam.attach(preview) // display preview
         Webcam.on('load', () => {
           this.sendNotification("EXT_SELFIESFLASH-ON") // send to EXT-SelfiesFlash
-          //loop(countdown)
-          test.classList.add("container")
-          testage.classList.add("dot")
+          test.classList.add("shown")
           testage.addEventListener("animationend" , (e) => {
+            if (e.animationName != "googleAnim") return // ignore others
             if (sound) shutter.play()
-            test.classList.remove("container")
-            testage.classList.remove("dot")
             Webcam.snap(data_uri => { // take the shoot and ...
+              test.classList.remove("shown")
               this.sendNotification("EXT_SELFIESFLASH-OFF") // send to EXT-SelfiesFlash
               this.sendSocketNotification("SAVE", { // save the shoot
                 data: data_uri,
@@ -319,14 +305,12 @@ Module.register("EXT-Selfies", {
         })
       } else {
         this.sendNotification("EXT_SELFIESFLASH-ON")
-        //loop(countdown)
-        test.classList.add("container")
-        testage.classList.add("dot")
-        testage.addEventListener("animationend" , () => {
+        test.classList.add("shown")
+        testage.addEventListener("animationend" , (e) => {
+          if (e.animationName != "googleAnim") return // ignore others
           if (sound) shutter.play()
-          test.classList.remove("container")
-          testage.classList.remove("dot")
           Webcam.snap(data_uri => { // take the shoot and ...
+            test.classList.remove("shown")
             this.sendNotification("EXT_SELFIESFLASH-OFF") // send to EXT-SelfiesFlash
             this.sendSocketNotification("SAVE", { // save the shoot
               data: data_uri,
@@ -336,21 +320,19 @@ Module.register("EXT-Selfies", {
         }, {once: true})
       }
     } else {
-        test.classList.add("container")
-        testage.classList.add("dot")
+        test.classList.add("shown")
         testage.addEventListener("animationend" , (e) => {
+          if (e.animationName != "googleAnim") return // ignore others
           if (sound) shutter.play()
-          test.classList.remove("container")
-          testage.classList.remove("dot")
           this.sendSocketNotification("SHOOT", {
             option: option
           })
+          test.classList.remove("shown")
         }, {once: true})
     }
   },
 
   postShoot: function(result) {
-    console.log(result)
     var autoValidation = (result.option.hasOwnProperty("autoValidate")) ? result.option.autoValidate:this.config.autoValidate
     if (!autoValidation) this.validateSelfie(result)
     this.showLastPhoto(result, autoValidation)
@@ -429,90 +411,5 @@ Module.register("EXT-Selfies", {
     rd.classList.remove("shown")
     if (this.config.usePreview) preview.classList.add("shown")
     c.innerHTML = this.config.shootCountdown
-  },
-
- /** TelegramBot function **/
- /*
-   getCommands: function(commander) {
-    commander.add({
-      command: 'selfie',
-      callback: 'cmdSelfie',
-      description: "Take a selfie.",
-    })
-
-    commander.add({
-      command: 'emptyselfie',
-      callback: 'cmdEmptySelfie',
-      description: "Remove all selfie photos."
-    })
-
-    commander.add({
-      command: 'lastselfie',
-      callback: 'cmdLastSelfie',
-      description: 'Display the last selfie shot taken.'
-    })
-  },
-
-  cmdSelfie: function(command, handler) {
-    if (this.IsShooting) return handler.reply("TEXT", "Not available actually.")
-    var countdown = null
-    if (handler.args) countdown = handler.args
-    if (!countdown) countdown = this.config.shootCountdown
-    var session = Date.now()
-    this.session[session] = handler
-    this.shoot({shootCountdown:countdown}, {key:session, ext:"TELBOT"})
-  },
-
-  cmdSelfieResult: function(key, path) {
-    var handler = this.session[key]
-    handler.reply("PHOTO_PATH", path)
-    this.session[key] = null
-    delete this.session[key]
-  },
-
-  cmdLastSelfie: function(command, handler) {
-    if (this.IsShooting) return handler.reply("TEXT", "Not available actually.")
-    if (this.lastPhoto) {
-      handler.reply("PHOTO_PATH", this.lastPhoto.path)
-      this.showLastPhoto(this.lastPhoto, true)
-    } else {
-      handler.reply("TEXT", "Couldn't find the last selfie.")
-    }
-  },
-
-  cmdEmptySelfie: function(command, handler) {
-    if (this.IsShooting) return handler.reply("TEXT", "Not available actually.")
-    this.sendSocketNotification("EMPTY")
-    this.lastPhoto = null
-    handler.reply("TEXT", "done.")
-  },
-
-  sendSelfieTB: function(result) {
-    var at = false
-    if (result.session) {
-      if (result.session.ext == "TELBOT") {
-        at = true
-        this.cmdSelfieResult(result.session.key, result.path)
-      }        
-      if (result.session.ext == "CALLBACK") {
-        if (this.session.hasOwnProperty(result.session.key)) {
-          callback = this.session[result.session.key]
-          callback({
-            path: result.path,
-            uri: result.uri
-          })
-          this.session[result.session.key] = null
-          delete this.session[result.session.key]
-        }
-      }
-      if (this.config.sendTelegramBot && !at) {
-        this.sendNotification("TELBOT_TELL_ADMIN", {
-          type: "PHOTO_PATH",
-          path: result.path
-        })
-        this.sendNotification("TELBOT_TELL_ADMIN", "New Selfie")
-      }
-    }
   }
-*/
 })
