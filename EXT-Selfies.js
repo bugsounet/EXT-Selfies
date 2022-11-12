@@ -9,6 +9,7 @@
 /** @todo:
  * rewrite TB functions (/selfie, /emptyselfie, /lastselfie)
  * OR move it to EXT-SelfiesXXX ?? with mail,googlephoto,and telegram ?
+ * make an helperConfig (all config is not needed)
  **/
 
 Module.register("EXT-Selfies", {
@@ -18,8 +19,9 @@ Module.register("EXT-Selfies", {
     captureHeight:720, // In some webcams, resolution ratio might be fixed so these values might not be applied.
     device: null, // For default camera. Or, device: "USB Camera" <-- See the backend log to get your installed camera name.
     // device is only used if preview not used
-    shootMessage: "Smile!",
-    shootCountdown: 5,
+    usePreview: true,
+    previewWidth:640,
+    previewHeight:360,
     displayButton: true,
     buttonStyle: 1, // Set 1, 2, 3, 4 --- can be an array [1,2] for blinking --- 0 for default font-awesome icon (camera)
     buttons: {
@@ -29,19 +31,17 @@ Module.register("EXT-Selfies", {
       4: "christmas.png"
     },
     blinkButton: false,
-    updateInterval: 7 * 1000,
-    animationSpeed: 3000,
     playShutter: true,
     shutterSound: "shutter.mp3",
     resultDuration: 1000 * 10,
     autoValidate: false,
-    usePreview: true,   // Fonction display capture
-    previewWidth:640,
-    previewHeight:360
+    counterStyle: 1
   },
 
   getStyles: function() {
-    return ["EXT-Selfies.css", "font-awesome.css"]
+    let defaultStyle = ["EXT-Selfies.css", "font-awesome.css"]
+    defaultStyle.push(this.defineCSSFile())
+    return defaultStyle
   },
 
   getScripts: function() {
@@ -52,6 +52,64 @@ Module.register("EXT-Selfies", {
     this.IsShooting = false
     this.sendSocketNotification("INIT", this.config)
     this.lastPhoto = null
+    /** 1: google
+      *  2: point
+      *  3:
+     **/
+
+    this.counterStyleHTML = {
+      1: `
+  <div class="google__colored-blocks">
+    <div class="google__colored-blocks-rotater">
+      <div class="google__colored-block"></div>
+      <div class="google__colored-block"></div>
+      <div class="google__colored-block"></div>
+      <div class="google__colored-block"></div>
+    </div>
+    <div class="google__colored-blocks-inner"></div>
+    <div class="google__text">Smiles!</div>
+  </div>
+  <div class="google__inner">
+    <svg class="google__numbers" viewBox="0 0 100 100">
+      <defs>
+        <path class="google__num-path-1" d="M40,28 55,22 55,78"/>
+        <path class="google__num-join-1-2" d="M55,78 55,83 a17,17 0 1,0 34,0 a20,10 0 0,0 -20,-10"/>
+        <path class="google__num-path-2" d="M69,73 l-35,0 l30,-30 a16,16 0 0,0 -22.6,-22.6 l-7,7"/>
+        <path class="google__num-join-2-3" d="M28,69 Q25,44 34.4,27.4"/>
+        <path class="google__num-path-3" d="M30,20 60,20 40,50 a18,15 0 1,1 -12,19"/>
+      </defs>
+      <path class="google__numbers-path" 
+            d="M-10,20 60,20 40,50 a18,15 0 1,1 -12,19 
+               Q25,44 34.4,27.4
+               l7,-7 a16,16 0 0,1 22.6,22.6 l-30,30 l35,0 L69,73 
+               a20,10 0 0,1 20,10 a17,17 0 0,1 -34,0 L55,83 
+               l0,-61 L40,28" />
+    </svg>
+  </div>
+`,
+
+      2: `
+  <div class="c"></div>
+  <div class="o"></div>
+  <div class="u"></div>
+  <div class="n"></div>
+  <div class="t"></div>
+<svg>
+  <defs>
+    <filter id="filter">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="18" result="blur" />
+      <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 28 -10" result="filter" />
+      <feComposite in="SourceGraphic" in2="filter" operator="atop" />
+    </filter>
+  </defs>
+</svg>
+`,
+
+      3: `
+      
+`
+    }
+    this.counterStyle = null
     this.resourcesPatch = "/modules/EXT-Selfies/resources/"
     this.logoSelfies = this.resourcesPatch
     this.logo= {
@@ -64,6 +122,9 @@ Module.register("EXT-Selfies", {
     } else if (Array.isArray(this.config.buttonStyle) && this.config.buttons[this.config.buttonStyle[0]]) { // buttonStyle is an array [1,2,3] and verify the first number of the array
       this.logoSelfies += this.config.buttons[this.config.buttonStyle[0]] // select the first number of the array
     } else this.logoSelfies += "master.png" // fallback to master.png
+    if (this.config.counterStyle && this.counterStyleHTML[this.config.counterStyle]) {
+      this.counterStyle = this.counterStyleHTML[this.config.counterStyle]
+    } else this.counterStyle = this.counterStyleHTML[1]
   },
 
   getDom: function() {
@@ -111,27 +172,18 @@ Module.register("EXT-Selfies", {
     var dom = document.createElement("div")
     dom.id = "EXT-SELFIES"
 
-    var win = document.createElement("div")
-    win.classList.add("window")
-    var message = document.createElement("div")
-    message.classList.add("message")
-    message.innerHTML = this.config.shootMessage
-    var count = document.createElement("div")
-    count.classList.add("count")
-    count.innerHTML = this.config.shootCountdown
-
-    win.appendChild(message)
-    win.appendChild(count)
-    dom.appendChild(win)
-
-    var preview = document.createElement("div") // créer l'element preview
+    var preview = document.createElement("div")
     preview.classList.add("preview")
     dom.appendChild(preview)
-
-    var icon = document.createElement("div")
-    icon.id = "EXT-SELFIES-BUTTON"
-    icon.classList.add("hidden")
-    dom.appendChild(icon)
+    
+    var animate = document.createElement("div")
+    animate.id = "EXT-SELFIES-ANIMATE"
+    dom.appendChild(animate)
+    var animatedCounter = document.createElement("div")
+    animatedCounter.id = "EXT-SELFIES-COUNTER"
+    animatedCounter.classList.add("google")
+    animatedCounter.innerHTML = this.counterStyle
+    animate.appendChild(animatedCounter)
 
     var shutter = document.createElement("audio")
     shutter.classList.add("shutter")
@@ -232,64 +284,122 @@ Module.register("EXT-Selfies", {
     }
   },
 
-  shoot: function(option={}, retry = false) { // need todo better (@bugsounet)
+  shoot: function(option={}, retry = false) {
     this.sendNotification("EXT_SELFIES-START")
     this.IsShooting = true
-    var sound = (option.hasOwnProperty("playShutter")) ? option.playShutter : this.config.playShutter
-    var countdown = (option.hasOwnProperty("shootCountdown")) ? option.shootCountdown : this.config.shootCountdown
     var con = document.querySelector("#EXT-SELFIES")
-    var win = document.querySelector("#EXT-SELFIES .window")
-    var preview = document.querySelector("#EXT-SELFIES .preview")
+    var button = document.getElementById("EXT-SELFIES-BUTTON")
 
-    if (this.config.displayButton) {
-      var button = document.getElementById("EXT-SELFIES-BUTTON")
-      button.classList.add("hidden") // cache le boutton
-    }
+    if (this.config.displayButton) button.classList.add("hidden") // cache le boutton
+
     con.classList.add("shown")
-    win.classList.add("shown")
 
-    const loop = (count) => {
-      var c = document.querySelector("#EXT-SELFIES .count")
-      c.innerHTML = count
-      if (count == 0) {
-        if (this.config.usePreview) {
-          Webcam.snap(data_uri => { // take the shoot and ...
-            this.sendNotification("EXT_SELFIESFLASH-OFF") // send to EXT-SelfiesFlash
-            this.sendSocketNotification("SAVE", { // save the shoot
-              data: data_uri,
-              option: option
-            })
-          })
-        } else {
-          this.sendSocketNotification("SHOOT", {
-            option: option
-          })
-        }
+    if (this.config.usePreview) this.initShootWithPreview(option,retry)
+    else this.initShootWithNoPreview(option)
+  },
 
-        var shutter = document.querySelector("#EXT-SELFIES .shutter")
-        if (sound) shutter.play()
-      } else {
-        setTimeout(()=>{
-          count--
-          loop(count)
-        }, 1000)
-      }
-    }
-    if (this.config.usePreview) {
-      if (!retry) {
-        preview.classList.add("shown")
-        Webcam.attach(preview) // display preview
-        Webcam.on('load', () => {
-          this.sendNotification("EXT_SELFIESFLASH-ON") // send to EXT-SelfiesFlash
-          loop(countdown)
+  initShootWithPreview: function (option, retry) {
+    var animate = document.getElementById("EXT-SELFIES-ANIMATE")
+    var animatedCounter = document.getElementById("EXT-SELFIES-COUNTER")
+    var preview = document.querySelector("#EXT-SELFIES .preview")
+    if (retry) { // need to retry the shoot ? (don't re-init camera)
+      this.sendNotification("EXT_SELFIESFLASH-ON")
+      animate.classList.add("shown")
+      if (this.config.counterStyle == 1) {
+        animatedCounter.addEventListener("animationend" , (e) => {
+          if (e.animationName != "googleAnim") return // ignore others
+          this.takeShootWithPreview(option)
+        }, {once: true}) // don't duplicate EventListener !
+      } else if (this.config.counterStyle == 2) {
+        this.countDown(5).then(() => {
+          this.takeShootWithPreview(option)
         })
-      } else {
-        this.sendNotification("EXT_SELFIESFLASH-ON")
-        loop(countdown)
+      } else if (this.config.counterStyle == 3) {
+        // reserved style 3
       }
-    } else {
-      loop(countdown)
+
+    } else { // take the shoot
+      preview.classList.add("shown")
+      Webcam.attach(preview)
+      Webcam.on('load', () => {
+        this.sendNotification("EXT_SELFIESFLASH-ON")
+        animate.classList.add("shown")
+        if (this.config.counterStyle == 1) {
+          animatedCounter.addEventListener("animationend" , (e) => {
+            if (e.animationName != "googleAnim") return // ignore others
+            this.takeShootWithPreview(option)
+          }, {once: true})
+        } else if (this.config.counterStyle == 2) {
+          this.countDown(5).then(() => {
+            this.takeShootWithPreview(option)
+          })
+        } else if (this.config.counterStyle == 3) {
+          // reserved style 3
+        }
+        
+      })
     }
+  },
+
+  initShootWithNoPreview: function (option) {
+    var animate = document.getElementById("EXT-SELFIES-ANIMATE")
+    var animatedCounter = document.getElementById("EXT-SELFIES-COUNTER")
+    animate.classList.add("shown")
+    if (this.config.counterStyle == 1) {
+      animatedCounter.addEventListener("animationend" , (e) => {
+        if (e.animationName != "googleAnim") return // ignore others
+        this.takeShootWithNoPreview(option)
+      }, {once: true})
+    } else if (this.config.counterStyle == 2) {
+      this.countDown(5).then(() => {
+        this.takeShootWithNoPreview(option)
+      })
+    } else if (this.config.counterStyle == 3) {
+      // reserved style 3
+    }
+  },
+
+  takeShootWithPreview: function (option) {
+    var sound = (option.hasOwnProperty("playShutter")) ? option.playShutter : this.config.playShutter
+    var animate = document.getElementById("EXT-SELFIES-ANIMATE")
+    var shutter = document.querySelector("#EXT-SELFIES .shutter")
+    if (sound) shutter.play()
+    Webcam.snap(data_uri => {
+      this.sendNotification("EXT_SELFIESFLASH-OFF")
+      this.sendSocketNotification("SAVE", {
+        data: data_uri,
+        option: option
+      })
+      animate.classList.remove("shown")
+    })
+  },
+
+  takeShootWithNoPreview: function (option) {
+    var sound = (option.hasOwnProperty("playShutter")) ? option.playShutter : this.config.playShutter
+    var animate = document.getElementById("EXT-SELFIES-ANIMATE")
+    var shutter = document.querySelector("#EXT-SELFIES .shutter")
+    if (sound) shutter.play()
+    this.sendSocketNotification("SHOOT", {
+      option: option
+    })
+    animate.classList.remove("shown")
+  },
+
+  countDown: function (count) { // style 2 main
+    var animatedCounter = document.getElementById("EXT-SELFIES-COUNTER")
+    return new Promise (resolve => {
+      if (count < 0) resolve()
+      else {
+        animatedCounter.removeAttribute('class')
+        setTimeout(()=>{
+          animatedCounter.classList.add('counter-' + count)
+          setTimeout(()=>{
+            count--
+            this.countDown(count).then(resolve)
+          }, 1000)
+        }, 600)
+      }
+    })
   },
 
   postShoot: function(result) {
@@ -348,7 +458,6 @@ Module.register("EXT-Selfies", {
     var pannel = document.getElementById("EXT-SELFIES-PANNEL")
     var button = document.getElementById("EXT-SELFIES-BUTTON")
     var preview = document.querySelector("#EXT-SELFIES .preview")
-    var c = document.querySelector("#EXT-SELFIES .count")
     if (pannel) pannel.classList.remove("shown")
     rd.classList.remove("shown")
     con.classList.remove("shown")
@@ -356,105 +465,26 @@ Module.register("EXT-Selfies", {
       preview.classList.remove("shown")
       Webcam.reset() // free the camera
     }
-    c.innerHTML = this.config.shootCountdown
     this.sendNotification("EXT_SELFIES-END")
     if (this.config.displayButton) button.classList.remove("hidden") // montre le boutton
     this.IsShooting = false
   },
 
-  retryDisplayer() {
+  retryDisplayer: function () {
     var rd = document.querySelector("#EXT-SELFIES .result")
     var pannel = document.getElementById("EXT-SELFIES-PANNEL")
     var preview = document.querySelector("#EXT-SELFIES .preview")
-    var c = document.querySelector("#EXT-SELFIES .count")
     if (pannel) pannel.classList.remove("shown")
     rd.classList.remove("shown")
     if (this.config.usePreview) preview.classList.add("shown")
-    c.innerHTML = this.config.shootCountdown
   },
-
- /** TelegramBot function **/
- /*
-   getCommands: function(commander) {
-    commander.add({
-      command: 'selfie',
-      callback: 'cmdSelfie',
-      description: "Take a selfie.",
-    })
-
-    commander.add({
-      command: 'emptyselfie',
-      callback: 'cmdEmptySelfie',
-      description: "Remove all selfie photos."
-    })
-
-    commander.add({
-      command: 'lastselfie',
-      callback: 'cmdLastSelfie',
-      description: 'Display the last selfie shot taken.'
-    })
-  },
-
-  cmdSelfie: function(command, handler) {
-    if (this.IsShooting) return handler.reply("TEXT", "Not available actually.")
-    var countdown = null
-    if (handler.args) countdown = handler.args
-    if (!countdown) countdown = this.config.shootCountdown
-    var session = Date.now()
-    this.session[session] = handler
-    this.shoot({shootCountdown:countdown}, {key:session, ext:"TELBOT"})
-  },
-
-  cmdSelfieResult: function(key, path) {
-    var handler = this.session[key]
-    handler.reply("PHOTO_PATH", path)
-    this.session[key] = null
-    delete this.session[key]
-  },
-
-  cmdLastSelfie: function(command, handler) {
-    if (this.IsShooting) return handler.reply("TEXT", "Not available actually.")
-    if (this.lastPhoto) {
-      handler.reply("PHOTO_PATH", this.lastPhoto.path)
-      this.showLastPhoto(this.lastPhoto, true)
-    } else {
-      handler.reply("TEXT", "Couldn't find the last selfie.")
+  
+  defineCSSFile: function () {
+    let counterStyleCSS= {
+      1: "/modules/EXT-Selfies/resources/google.css",
+      2: "/modules/EXT-Selfies/resources/countdown.css",
+      3: "test2.css"
     }
-  },
-
-  cmdEmptySelfie: function(command, handler) {
-    if (this.IsShooting) return handler.reply("TEXT", "Not available actually.")
-    this.sendSocketNotification("EMPTY")
-    this.lastPhoto = null
-    handler.reply("TEXT", "done.")
-  },
-
-  sendSelfieTB: function(result) {
-    var at = false
-    if (result.session) {
-      if (result.session.ext == "TELBOT") {
-        at = true
-        this.cmdSelfieResult(result.session.key, result.path)
-      }        
-      if (result.session.ext == "CALLBACK") {
-        if (this.session.hasOwnProperty(result.session.key)) {
-          callback = this.session[result.session.key]
-          callback({
-            path: result.path,
-            uri: result.uri
-          })
-          this.session[result.session.key] = null
-          delete this.session[result.session.key]
-        }
-      }
-      if (this.config.sendTelegramBot && !at) {
-        this.sendNotification("TELBOT_TELL_ADMIN", {
-          type: "PHOTO_PATH",
-          path: result.path
-        })
-        this.sendNotification("TELBOT_TELL_ADMIN", "New Selfie")
-      }
-    }
+    return counterStyleCSS[this.config.counterStyle] || counterStyleCSS[1]
   }
-*/
 })
