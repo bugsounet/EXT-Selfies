@@ -1,0 +1,41 @@
+#EXT-SELFIES-ANIMATE {
+  display: none;
+}
+
+#EXT-SELFIES-ANIMATE.shown {
+  display: block;
+}
+
+#EXT-SELFIES-COUNTER {
+  position:absolute;
+  width: 400px;
+  height: 400px;
+  top: calc((100% - 400px) / 2);
+  left: calc((100% - 400px) / 2);
+  box-sizing:border-box;
+  border: 10px solid #FFF;
+  background-color: Black;
+  padding:20px;
+  text-align:center;
+  border-radius: 20px;
+  display: flex;
+  flex-direction:column;
+  justify-content: space-around;
+}
+
+#EXT-SELFIES-COUNTER .message {
+  font-family: cursive, 'Pacifico';
+  font-size: 30px;    
+  font-weight:bold;
+  color: #37f713;
+  height:60px;
+}
+
+#EXT-SELFIES-COUNTER .count {
+  font-family: cursive, 'Pacifico';
+  font-size:180px;
+  font-weight:bold;
+  color:#37f713;
+  height: 200px;
+  line-height: 80%;
+}
