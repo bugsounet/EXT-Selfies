@@ -166,7 +166,7 @@ Module.register("EXT-Selfies", {
         icon.classList.add("large")
         if (this.config.blinkButton) icon.classList.add("flash") // active le flash sur le button unique ?
       }
-      icon.addEventListener("click", () => this.shoot(this.config))
+      icon.addEventListener("click", () => this.shoot())
       wrapper.appendChild(icon)
     } else wrapper.style.display = 'none'
     return wrapper
@@ -270,11 +270,7 @@ Module.register("EXT-Selfies", {
         break
       case "EXT_SELFIES-SHOOT":
         if (this.IsShooting) return
-        var pl = {
-          option: {}
-        }
-        pl = Object.assign({}, pl, payload)
-        this.shoot(pl.option)
+        this.shoot(payload)
         break
       case "EXT_SELFIES-EMPTY_STORE":
         if (this.IsShooting) return
@@ -283,12 +279,17 @@ Module.register("EXT-Selfies", {
         break
       case "EXT_SELFIES-LAST":
         if (this.IsShooting || !this.lastPhoto) return
-        this.showLastPhoto(this.lastPhoto, true)
+        this.showLastPhoto(this.lastPhoto, false)
         break
     }
   },
 
-  shoot: function(option={}, retry = false) {
+  shoot: function(options={}, retry = false) {
+    var options = {
+      playShutter: options.playShutter || this.config.playShutter,
+      autoValidate: options.autoValidate || this.config.autoValidate,
+      usePreview: options.usePreview || this.config.usePreview
+    }
     this.sendNotification("EXT_SELFIES-START")
     this.IsShooting = true
     var con = document.querySelector("#EXT-SELFIES")
@@ -298,11 +299,11 @@ Module.register("EXT-Selfies", {
 
     con.classList.add("shown")
 
-    if (this.config.usePreview) this.initShootWithPreview(option,retry)
-    else this.initShootWithNoPreview(option)
+    if (options.usePreview) this.initShootWithPreview(options,retry)
+    else this.initShootWithNoPreview(options)
   },
 
-  initShootWithPreview: function (option, retry) {
+  initShootWithPreview: function (options, retry) {
     var animate = document.getElementById("EXT-SELFIES-ANIMATE")
     var animatedCounter = document.getElementById("EXT-SELFIES-COUNTER")
     var preview = document.querySelector("#EXT-SELFIES .preview")
@@ -311,23 +312,23 @@ Module.register("EXT-Selfies", {
       animate.classList.add("shown")
       if (this.config.counterStyle == 1) {
         animatedCounter.addEventListener("animationend" , () => {
-          this.takeShootWithPreview(option)
+          this.takeShootWithPreview(options)
         }, {once: true}) // don't duplicate EventListener !
       } else if (this.config.counterStyle == 2) {
         this.countDownForStyle2(5).then(() => {
-          this.takeShootWithPreview(option)
+          this.takeShootWithPreview(options)
         })
       } else if (this.config.counterStyle == 3) {
         animate.classList.add("move")
         animatedCounter.classList.add("dot")
         animatedCounter.addEventListener("animationend" , () => {
-          this.takeShootWithPreview(option)
+          this.takeShootWithPreview(options)
           animate.classList.remove("move")
           animatedCounter.classList.remove("dot")
         }, {once: true})
       } else { // fallback to default
         this.countDownForStyle0(5).then(() => {
-          this.takeShootWithPreview(option)
+          this.takeShootWithPreview(options)
         })
       }
 
@@ -340,59 +341,59 @@ Module.register("EXT-Selfies", {
         if (this.config.counterStyle == 1) {
           animatedCounter.classList.add("google")
           animatedCounter.addEventListener("animationend" , () => {
-            this.takeShootWithPreview(option)
+            this.takeShootWithPreview(options)
           }, {once: true})
         } else if (this.config.counterStyle == 2) {
           this.countDownForStyle2(5).then(() => {
-            this.takeShootWithPreview(option)
+            this.takeShootWithPreview(options)
           })
         } else if (this.config.counterStyle == 3) {
           animate.classList.add("move")
           animatedCounter.classList.add("dot")
           animatedCounter.addEventListener("animationend" , () => {
-            this.takeShootWithPreview(option)
+            this.takeShootWithPreview(options)
             animate.classList.remove("move")
             animatedCounter.classList.remove("dot")
           }, {once: true})
         } else { // fallback to default
           this.countDownForStyle0(5).then(() => {
-            this.takeShootWithPreview(option)
+            this.takeShootWithPreview(options)
           })
         }
       })
     }
   },
 
-  initShootWithNoPreview: function (option) {
+  initShootWithNoPreview: function (options) {
     var animate = document.getElementById("EXT-SELFIES-ANIMATE")
     var animatedCounter = document.getElementById("EXT-SELFIES-COUNTER")
     animate.classList.add("shown")
     if (this.config.counterStyle == 1) {
       animatedCounter.classList.add("google")
       animatedCounter.addEventListener("animationend" , () => {
-        this.takeShootWithNoPreview(option)
+        this.takeShootWithNoPreview(options)
       }, {once: true})
     } else if (this.config.counterStyle == 2) {
       this.countDownForStyle2(5).then(() => {
-        this.takeShootWithNoPreview(option)
+        this.takeShootWithNoPreview(options)
       })
     } else if (this.config.counterStyle == 3) {
       animate.classList.add("move")
       animatedCounter.classList.add("dot")
       animatedCounter.addEventListener("animationend" , () => {
-        this.takeShootWithNoPreview(option)
+        this.takeShootWithNoPreview(options)
         animate.classList.remove("move")
         animatedCounter.classList.remove("dot")
       }, {once: true})
     } else { // fallback to default
       this.countDownForStyle0(5).then(() => {
-        this.takeShootWithNoPreview(option)
+        this.takeShootWithNoPreview(options)
       })
     }
   },
 
-  takeShootWithPreview: function (option) {
-    var sound = (option.hasOwnProperty("playShutter")) ? option.playShutter : this.config.playShutter
+  takeShootWithPreview: function (options) {
+    var sound = options.playShutter
     var animate = document.getElementById("EXT-SELFIES-ANIMATE")
     var shutter = document.querySelector("#EXT-SELFIES .shutter")
     if (sound) shutter.play()
@@ -400,19 +401,19 @@ Module.register("EXT-Selfies", {
       this.sendNotification("EXT_SELFIESFLASH-OFF")
       this.sendSocketNotification("SAVE", {
         data: data_uri,
-        option: option
+        options: options
       })
       animate.classList.remove("shown")
     })
   },
 
-  takeShootWithNoPreview: function (option) {
-    var sound = (option.hasOwnProperty("playShutter")) ? option.playShutter : this.config.playShutter
+  takeShootWithNoPreview: function (options) {
+    var sound = options.playShutter
     var animate = document.getElementById("EXT-SELFIES-ANIMATE")
     var shutter = document.querySelector("#EXT-SELFIES .shutter")
     if (sound) shutter.play()
     this.sendSocketNotification("SHOOT", {
-      option: option
+      options: options
     })
     animate.classList.remove("shown")
   },
@@ -449,12 +450,13 @@ Module.register("EXT-Selfies", {
   },
 
   postShoot: function(result) {
-    var autoValidation = (result.option.hasOwnProperty("autoValidate")) ? result.option.autoValidate:this.config.autoValidate
+    var autoValidation = result.options.autoValidate
     if (!autoValidation) this.validateSelfie(result)
-    this.showLastPhoto(result, autoValidation)
+    this.showLastPhoto(result)
   },
 
-  showLastPhoto: function(result, autoValidate= false) {
+  showLastPhoto: function(result, sendResult = true) {
+    var autoValidate = result.autoValidate
     this.IsShooting = true
     var con = document.querySelector("#EXT-SELFIES")
     con.classList.add("shown")
@@ -465,7 +467,7 @@ Module.register("EXT-Selfies", {
     if (autoValidate) {
       setTimeout(()=>{
         this.lastPhoto = result
-        this.sendNotification("EXT_SELFIES-RESULT", result)
+        if (sendResult) this.sendNotification("EXT_SELFIES-RESULT", result)
         this.closeDisplayer()
       }, this.config.resultDuration)
     }
@@ -488,7 +490,7 @@ Module.register("EXT-Selfies", {
     retryIcon.onclick = ()=> { 
       this.sendSocketNotification("DELETE", result)
       this.retryDisplayer()
-      this.shoot(result.option, true)
+      this.shoot(result.options, true)
     }
 
     var exitIcon = document.getElementById("EXT-SELFIES-EXIT")

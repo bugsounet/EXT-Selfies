@@ -99,7 +99,7 @@ module.exports = NodeHelper.create({
       this.sendSocketNotification("SHOOT_RESULT", {
         path: filename + ".jpeg",
         uri: uri + ".jpeg",
-        option: payload.option
+        options: payload.options
       })
     })
   },
@@ -118,7 +118,7 @@ module.exports = NodeHelper.create({
       device: this.device,
       callbackReturn: "location",
       verbose: this.config.debug
-    }, (payload.option) ? payload.option : {})
+    }, (payload.options) ? payload.options : {})
 
     this.sendSocketNotification("FLASH_ON") // infom main js with FLASH_ON for EXT-SelfiesFlash (before take shoot)
 
@@ -130,11 +130,10 @@ module.exports = NodeHelper.create({
         return
       }
       log("Photo is taken:", data)
-      console.log(payload)
       this.sendSocketNotification("SHOOT_RESULT", {
         path: data,
         uri: uri,
-        option: payload.option
+        options: payload.options
       })
     })
 
