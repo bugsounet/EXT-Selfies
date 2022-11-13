@@ -32,10 +32,9 @@ Module.register("EXT-Selfies", {
     },
     blinkButton: false,
     playShutter: true,
-    shutterSound: "shutter.mp3",
     resultDuration: 1000 * 10,
     autoValidate: false,
-    counterStyle: 1
+    counterStyle: 0 // 0: default, 1: google, 2: point, 3: move, other will fallback to default (0)
   },
 
   getStyles: function() {
@@ -52,12 +51,18 @@ Module.register("EXT-Selfies", {
     this.IsShooting = false
     this.sendSocketNotification("INIT", this.config)
     this.lastPhoto = null
-    /** 1: google
-      *  2: point
-      *  3:
+    /** 0: default
+      * 1: google
+      * 2: point
+      * 3: move
      **/
 
     this.counterStyleHTML = {
+      0: `
+    <div class="message">Smiles!</div>
+    <div class="count">5</div>
+`,
+
       1: `
   <div class="google__colored-blocks">
     <div class="google__colored-blocks-rotater">
@@ -106,7 +111,7 @@ Module.register("EXT-Selfies", {
 `,
 
       3: `
-      
+  <div></div>
 `
     }
     this.counterStyle = null
@@ -124,7 +129,7 @@ Module.register("EXT-Selfies", {
     } else this.logoSelfies += "master.png" // fallback to master.png
     if (this.config.counterStyle && this.counterStyleHTML[this.config.counterStyle]) {
       this.counterStyle = this.counterStyleHTML[this.config.counterStyle]
-    } else this.counterStyle = this.counterStyleHTML[1]
+    } else this.counterStyle = this.counterStyleHTML[0]
   },
 
   getDom: function() {
@@ -181,14 +186,13 @@ Module.register("EXT-Selfies", {
     dom.appendChild(animate)
     var animatedCounter = document.createElement("div")
     animatedCounter.id = "EXT-SELFIES-COUNTER"
-    animatedCounter.classList.add("google")
     animatedCounter.innerHTML = this.counterStyle
     animate.appendChild(animatedCounter)
 
     var shutter = document.createElement("audio")
     shutter.classList.add("shutter")
     if (this.config.playShutter) {
-      shutter.src = "modules/EXT-Selfies/resources/" + this.config.shutterSound
+      shutter.src = this.resourcesPatch + "shutter.mp3"
     }
     dom.appendChild(shutter)
 
@@ -306,16 +310,25 @@ Module.register("EXT-Selfies", {
       this.sendNotification("EXT_SELFIESFLASH-ON")
       animate.classList.add("shown")
       if (this.config.counterStyle == 1) {
-        animatedCounter.addEventListener("animationend" , (e) => {
-          if (e.animationName != "googleAnim") return // ignore others
+        animatedCounter.addEventListener("animationend" , () => {
           this.takeShootWithPreview(option)
         }, {once: true}) // don't duplicate EventListener !
       } else if (this.config.counterStyle == 2) {
-        this.countDown(5).then(() => {
+        this.countDownForStyle2(5).then(() => {
           this.takeShootWithPreview(option)
         })
       } else if (this.config.counterStyle == 3) {
-        // reserved style 3
+        animate.classList.add("move")
+        animatedCounter.classList.add("dot")
+        animatedCounter.addEventListener("animationend" , () => {
+          this.takeShootWithPreview(option)
+          animate.classList.remove("move")
+          animatedCounter.classList.remove("dot")
+        }, {once: true})
+      } else { // fallback to default
+        this.countDownForStyle0(5).then(() => {
+          this.takeShootWithPreview(option)
+        })
       }
 
     } else { // take the shoot
@@ -325,18 +338,27 @@ Module.register("EXT-Selfies", {
         this.sendNotification("EXT_SELFIESFLASH-ON")
         animate.classList.add("shown")
         if (this.config.counterStyle == 1) {
-          animatedCounter.addEventListener("animationend" , (e) => {
-            if (e.animationName != "googleAnim") return // ignore others
+          animatedCounter.classList.add("google")
+          animatedCounter.addEventListener("animationend" , () => {
             this.takeShootWithPreview(option)
           }, {once: true})
         } else if (this.config.counterStyle == 2) {
-          this.countDown(5).then(() => {
+          this.countDownForStyle2(5).then(() => {
             this.takeShootWithPreview(option)
           })
         } else if (this.config.counterStyle == 3) {
-          // reserved style 3
+          animate.classList.add("move")
+          animatedCounter.classList.add("dot")
+          animatedCounter.addEventListener("animationend" , () => {
+            this.takeShootWithPreview(option)
+            animate.classList.remove("move")
+            animatedCounter.classList.remove("dot")
+          }, {once: true})
+        } else { // fallback to default
+          this.countDownForStyle0(5).then(() => {
+            this.takeShootWithPreview(option)
+          })
         }
-        
       })
     }
   },
@@ -346,16 +368,26 @@ Module.register("EXT-Selfies", {
     var animatedCounter = document.getElementById("EXT-SELFIES-COUNTER")
     animate.classList.add("shown")
     if (this.config.counterStyle == 1) {
-      animatedCounter.addEventListener("animationend" , (e) => {
-        if (e.animationName != "googleAnim") return // ignore others
+      animatedCounter.classList.add("google")
+      animatedCounter.addEventListener("animationend" , () => {
         this.takeShootWithNoPreview(option)
       }, {once: true})
     } else if (this.config.counterStyle == 2) {
-      this.countDown(5).then(() => {
+      this.countDownForStyle2(5).then(() => {
         this.takeShootWithNoPreview(option)
       })
     } else if (this.config.counterStyle == 3) {
-      // reserved style 3
+      animate.classList.add("move")
+      animatedCounter.classList.add("dot")
+      animatedCounter.addEventListener("animationend" , () => {
+        this.takeShootWithNoPreview(option)
+        animate.classList.remove("move")
+        animatedCounter.classList.remove("dot")
+      }, {once: true})
+    } else { // fallback to default
+      this.countDownForStyle0(5).then(() => {
+        this.takeShootWithNoPreview(option)
+      })
     }
   },
 
@@ -385,7 +417,7 @@ Module.register("EXT-Selfies", {
     animate.classList.remove("shown")
   },
 
-  countDown: function (count) { // style 2 main
+  countDownForStyle2: function (count) { // style 2 main
     var animatedCounter = document.getElementById("EXT-SELFIES-COUNTER")
     return new Promise (resolve => {
       if (count < 0) resolve()
@@ -395,9 +427,23 @@ Module.register("EXT-Selfies", {
           animatedCounter.classList.add('counter-' + count)
           setTimeout(()=>{
             count--
-            this.countDown(count).then(resolve)
+            this.countDownForStyle2(count).then(resolve)
           }, 1000)
         }, 600)
+      }
+    })
+  },
+  
+  countDownForStyle0: function(count) { // default style
+    var c = document.querySelector("#EXT-SELFIES-COUNTER .count")
+    return new Promise (resolve => {
+      if (count < 0) resolve()
+      else {
+        c.innerHTML = count
+        setTimeout(() => {
+          count--
+          this.countDownForStyle0(count).then(resolve)
+        }, 1000)
       }
     })
   },
@@ -481,10 +527,11 @@ Module.register("EXT-Selfies", {
   
   defineCSSFile: function () {
     let counterStyleCSS= {
+      0: "/modules/EXT-Selfies/resources/default.css",
       1: "/modules/EXT-Selfies/resources/google.css",
       2: "/modules/EXT-Selfies/resources/countdown.css",
-      3: "test2.css"
+      3: "/modules/EXT-Selfies/resources/move.css"
     }
-    return counterStyleCSS[this.config.counterStyle] || counterStyleCSS[1]
+    return counterStyleCSS[this.config.counterStyle] || counterStyleCSS[0]
   }
 })
