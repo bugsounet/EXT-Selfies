@@ -61,7 +61,7 @@
 
 #EXT-SELFIES-BUTTON.uniqueFlash {
   opacity: 0;
-  animation: flash normal 2s 1 ease-in;
+  animation: blinkButton normal 2s 1 ease-in;
 }
 
 #EXT-SELFIES-BUTTON.flash {

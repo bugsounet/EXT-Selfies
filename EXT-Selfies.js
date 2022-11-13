@@ -191,9 +191,7 @@ Module.register("EXT-Selfies", {
 
     var shutter = document.createElement("audio")
     shutter.classList.add("shutter")
-    if (this.config.playShutter) {
-      shutter.src = this.resourcesPatch + "shutter.mp3"
-    }
+    shutter.src = this.resourcesPatch + "shutter.mp3"
     dom.appendChild(shutter)
 
     var validatePannel = document.createElement("div")
@@ -287,8 +285,7 @@ Module.register("EXT-Selfies", {
   shoot: function(options={}, retry = false) {
     var options = {
       playShutter: options.playShutter || this.config.playShutter,
-      autoValidate: options.autoValidate || this.config.autoValidate,
-      usePreview: options.usePreview || this.config.usePreview
+      autoValidate: options.autoValidate || this.config.autoValidate
     }
     this.sendNotification("EXT_SELFIES-START")
     this.IsShooting = true
@@ -299,7 +296,7 @@ Module.register("EXT-Selfies", {
 
     con.classList.add("shown")
 
-    if (options.usePreview) this.initShootWithPreview(options,retry)
+    if (this.config.usePreview) this.initShootWithPreview(options,retry)
     else this.initShootWithNoPreview(options)
   },
 
