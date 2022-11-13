@@ -9,7 +9,6 @@
 /** @todo:
  * rewrite TB functions (/selfie, /emptyselfie, /lastselfie)
  * OR move it to EXT-SelfiesXXX ?? with mail,googlephoto,and telegram ?
- * make an helperConfig (all config is not needed)
  **/
 
 Module.register("EXT-Selfies", {
@@ -34,7 +33,8 @@ Module.register("EXT-Selfies", {
     playShutter: true,
     resultDuration: 1000 * 10,
     autoValidate: false,
-    counterStyle: 0 // 0: default, 1: google, 2: point, 3: move, other will fallback to default (0)
+    counterStyle: 0, // 0: default, 1: google, 2: point, 3: move, other will fallback to default (0)
+    showResult: true
   },
 
   getStyles: function() {
@@ -218,18 +218,6 @@ Module.register("EXT-Selfies", {
     dom.appendChild(result)
 
     document.body.appendChild(dom)
-    /** init camera **/
-    if (this.config.usePreview) {
-      Webcam.set({ // set options
-        width: this.config.previewWidth,
-        height: this.config.previewHeight,
-        image_format: 'jpeg',
-        jpeg_quality: 100,
-        flip_horiz: true,
-        dest_width: this.config.captureWidth,
-        dest_height: this.config.captureHeight
-      })
-    }
   },
 
   socketNotificationReceived: function(noti, payload) {
@@ -242,15 +230,13 @@ Module.register("EXT-Selfies", {
           type: "error",
           message: payload,
         })
+        this.sendNotification("EXT_SELFIESFLASH-OFF") // send to EXT-SelfiesFlash
         this.sendNotification("EXT_SELFIES-END") // inform shoot ended
         this.closeDisplayer()
         this.IsShooting = false
         break
       case "SHOOTS_EMPTY":
         this.sendNotification("EXT_SELFIES-CLEAN_STORE") // inform there is no photos !
-        break
-      case "FLASH_ON":
-        this.sendNotification("EXT_SELFIESFLASH-ON") // send to EXT-SelfiesFlash
         break
       case "FLASH_OFF":
         this.sendNotification("EXT_SELFIESFLASH-OFF") // send to EXT-SelfiesFlash
@@ -285,7 +271,8 @@ Module.register("EXT-Selfies", {
   shoot: function(options={}, retry = false) {
     var options = {
       playShutter: options.playShutter || this.config.playShutter,
-      autoValidate: options.autoValidate || this.config.autoValidate
+      autoValidate: options.autoValidate || this.config.autoValidate,
+      showResult: options.showResult || this.config.showResult
     }
     this.sendNotification("EXT_SELFIES-START")
     this.IsShooting = true
@@ -301,6 +288,23 @@ Module.register("EXT-Selfies", {
   },
 
   initShootWithPreview: function (options, retry) {
+    if (!Webcam.params.webcamSet) {
+      Webcam.set({ // set options
+        width: this.config.previewWidth,
+        height: this.config.previewHeight,
+        image_format: 'jpeg',
+        jpeg_quality: 100,
+        flip_horiz: true,
+        dest_width: this.config.captureWidth,
+        dest_height: this.config.captureHeight,
+        webcamSet: true
+      })
+      Webcam.on("error", error => {
+        console.log("[SELFIES] Could not access webcam:", error)
+        this.socketNotificationReceived("ERROR", "Could not access webcam: " + error)
+      })
+      console.log("[SELFIES] Init camera params")
+    }
     var animate = document.getElementById("EXT-SELFIES-ANIMATE")
     var animatedCounter = document.getElementById("EXT-SELFIES-COUNTER")
     var preview = document.querySelector("#EXT-SELFIES .preview")
@@ -365,6 +369,7 @@ Module.register("EXT-Selfies", {
     var animate = document.getElementById("EXT-SELFIES-ANIMATE")
     var animatedCounter = document.getElementById("EXT-SELFIES-COUNTER")
     animate.classList.add("shown")
+    this.sendNotification("EXT_SELFIESFLASH-ON")
     if (this.config.counterStyle == 1) {
       animatedCounter.classList.add("google")
       animatedCounter.addEventListener("animationend" , () => {
@@ -447,20 +452,26 @@ Module.register("EXT-Selfies", {
   },
 
   postShoot: function(result) {
+    var showResult = result.options.showResult
     var autoValidation = result.options.autoValidate
-    if (!autoValidation) this.validateSelfie(result)
-    this.showLastPhoto(result)
+    if (showResult) {
+      if (!autoValidation) this.validateSelfie(result)
+      this.showLastPhoto(result)
+    } else {
+      this.lastPhoto = result
+      this.sendNotification("EXT_SELFIES-RESULT", result)
+      this.closeDisplayer()
+    }
   },
 
   showLastPhoto: function(result, sendResult = true) {
-    var autoValidate = result.autoValidate
+    var autoValidate = result.options.autoValidate
     this.IsShooting = true
     var con = document.querySelector("#EXT-SELFIES")
     con.classList.add("shown")
     var rd = document.querySelector("#EXT-SELFIES .result")
     rd.style.backgroundImage = `url(modules/EXT-Selfies/photos/${result.uri})`
     rd.classList.add("shown")
-
     if (autoValidate) {
       setTimeout(()=>{
         this.lastPhoto = result

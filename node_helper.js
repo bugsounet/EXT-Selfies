@@ -4,14 +4,6 @@
 *  10/2022          *
 ********************/
 
-/** Todo:
- * use onoff npm library for flash
-**/
-
-/** Warn:
- * flash is now moved to EXT-SelfiesFlash !
- **/
-
 const NodeWebcam = require( "node-webcam" );
 const moment = require("moment");
 const fs = require("fs");
@@ -119,8 +111,6 @@ module.exports = NodeHelper.create({
       callbackReturn: "location",
       verbose: this.config.debug
     }, (payload.options) ? payload.options : {})
-
-    this.sendSocketNotification("FLASH_ON") // infom main js with FLASH_ON for EXT-SelfiesFlash (before take shoot)
 
     NodeWebcam.capture(filename, opts, (err, data)=>{
       this.sendSocketNotification("FLASH_OFF") // infom main js with FLASH_OFF for EXT-SelfiesFlash (after take shoot)
