@@ -272,7 +272,8 @@ Module.register("EXT-Selfies", {
     var options = {
       playShutter: options.playShutter || this.config.playShutter,
       autoValidate: options.autoValidate || this.config.autoValidate,
-      showResult: options.showResult || this.config.showResult
+      showResult: options.showResult || this.config.showResult,
+      TBkey: options.TBkey || null
     }
     this.sendNotification("EXT_SELFIES-START")
     this.IsShooting = true
