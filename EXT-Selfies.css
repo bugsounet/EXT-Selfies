@@ -92,7 +92,7 @@
   display: flex;
 }
 
-#EXT-SELFIES-RETRY {
+#EXT-SELFIES-SEND {
   background-size: 100%;
   width: 70px;
   height: 70px;
@@ -101,7 +101,16 @@
   z-index: 1;
 }
 
-#EXT-SELFIES-VALIDATE {
+#EXT-SELFIES-SAVE {
+  background-size: 100%;
+  width: 70px;
+  height: 70px;
+  background-repeat: no-repeat;
+  margin: 10px;
+  z-index: 1;
+}
+
+#EXT-SELFIES-RETRY {
   background-size: 100%;
   width: 70px;
   height: 70px;

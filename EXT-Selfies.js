@@ -118,9 +118,10 @@ Module.register("EXT-Selfies", {
     this.resourcesPatch = "/modules/EXT-Selfies/resources/"
     this.logoSelfies = this.resourcesPatch
     this.logo= {
-      Validate: this.resourcesPatch + "validate.png",
+      Send: this.resourcesPatch + "send.png",
+      Save: this.resourcesPatch + "save.png",
       Exit: this.resourcesPatch + "exit.png",
-      Retry: this.resourcesPatch + "retry.png"
+      Retry: this.resourcesPatch + "retry.png",
     }
     if (this.config.buttonStyle && this.config.buttons[this.config.buttonStyle]) { // if buttonStyle is a number
       this.logoSelfies += this.config.buttons[this.config.buttonStyle]
@@ -197,10 +198,15 @@ Module.register("EXT-Selfies", {
     var validatePannel = document.createElement("div")
     validatePannel.id = "EXT-SELFIES-PANNEL"
 
-      var validateIcon = document.createElement("div")
-      validateIcon.id = "EXT-SELFIES-VALIDATE"
-      validateIcon.style.backgroundImage = `url(${this.logo.Validate})`
-      validatePannel.appendChild(validateIcon)
+      var sendIcon = document.createElement("div")
+      sendIcon.id = "EXT-SELFIES-SEND"
+      sendIcon.style.backgroundImage = `url(${this.logo.Send})`
+      validatePannel.appendChild(sendIcon)
+
+      var saveIcon = document.createElement("div")
+      saveIcon.id = "EXT-SELFIES-SAVE"
+      saveIcon.style.backgroundImage = `url(${this.logo.Save})`
+      validatePannel.appendChild(saveIcon)
 
       var retryIcon = document.createElement("div")
       retryIcon.id = "EXT-SELFIES-RETRY"
@@ -488,13 +494,18 @@ Module.register("EXT-Selfies", {
     var pannel = document.getElementById("EXT-SELFIES-PANNEL")
     pannel.classList.add("shown")
 
-    var validateIcon = document.getElementById("EXT-SELFIES-VALIDATE")
-    validateIcon.onclick = ()=> {
-      this.lastPhoto = result
-      this.sendNotification("EXT_SELFIES-RESULT", result)
+    var sendIcon = document.getElementById("EXT-SELFIES-SEND")
+    sendIcon.onclick = ()=> {
+      this.lastPhoto = result    // Sauvegarde le selfie en local
+      this.sendNotification("EXT_SELFIES-RESULT", result) // Envoi la notif pour EXT-SSender
       this.closeDisplayer()
     }
 
+    var saveIcon = document.getElementById("EXT-SELFIES-SAVE")
+    saveIcon.onclick = ()=> {
+      this.lastPhoto = result  // Sauvegarde uniquement le selfie en local
+      this.closeDisplayer()
+    }
     var retryIcon = document.getElementById("EXT-SELFIES-RETRY")
     retryIcon.onclick = ()=> { 
       this.sendSocketNotification("DELETE", result)
