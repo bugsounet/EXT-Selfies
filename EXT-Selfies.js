@@ -1,13 +1,12 @@
 /********************
 *  EXT-Selfies v1.0 *
 *  Bugsounet        *
-*  10/2022          *
+*  11/2022          *
 ********************/
 
 /** Warn: use `npm run update` for updating **/
 
 /** @todo:
- * rewrite TB functions (/selfie, /emptyselfie, /lastselfie)
  * OR move it to EXT-SelfiesXXX ?? with mail,googlephoto,and telegram ?
  **/
 
@@ -279,7 +278,8 @@ Module.register("EXT-Selfies", {
       playShutter: options.playShutter || this.config.playShutter,
       autoValidate: options.autoValidate || this.config.autoValidate,
       showResult: options.showResult || this.config.showResult,
-      TBkey: options.TBkey || null
+      TBkey: options.TBkey || null,
+      useTBKeyOnly: options.useTBKeyOnly || false
     }
     this.sendNotification("EXT_SELFIES-START")
     this.IsShooting = true
@@ -504,7 +504,7 @@ Module.register("EXT-Selfies", {
     var saveIcon = document.getElementById("EXT-SELFIES-SAVE")
     saveIcon.onclick = ()=> {
       this.lastPhoto = result  // Sauvegarde uniquement le selfie en local
-      result.useTBKeyOnly = true // "tag" affiche le resultat uniquement si la commande /selfie est utilisé (EXT-SelfieSender)
+      result.options.useTBKeyOnly = true // "tag" affiche le resultat uniquement si la commande /selfie est utilisé (EXT-SelfieSender)
       this.sendNotification("EXT_SELFIES-RESULT", result)
       this.closeDisplayer()
     }
