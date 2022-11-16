@@ -4,12 +4,6 @@
 *  11/2022          *
 ********************/
 
-/** Warn: use `npm run update` for updating **/
-
-/** @todo:
- * OR move it to EXT-SelfiesXXX ?? with mail,googlephoto,and telegram ?
- **/
-
 Module.register("EXT-Selfies", {
   defaults: {
     debug: false,
