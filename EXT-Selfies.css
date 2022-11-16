@@ -92,33 +92,9 @@
   display: flex;
 }
 
-#EXT-SELFIES-SEND {
-  background-size: 100%;
-  width: 70px;
-  height: 70px;
-  background-repeat: no-repeat;
-  margin: 10px;
-  z-index: 1;
-}
-
-#EXT-SELFIES-SAVE {
-  background-size: 100%;
-  width: 70px;
-  height: 70px;
-  background-repeat: no-repeat;
-  margin: 10px;
-  z-index: 1;
-}
-
-#EXT-SELFIES-RETRY {
-  background-size: 100%;
-  width: 70px;
-  height: 70px;
-  background-repeat: no-repeat;
-  margin: 10px;
-  z-index: 1;
-}
-
+#EXT-SELFIES-SEND,
+#EXT-SELFIES-SAVE,
+#EXT-SELFIES-RETRY,
 #EXT-SELFIES-EXIT {
   background-size: 100%;
   width: 70px;

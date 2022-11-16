@@ -504,6 +504,8 @@ Module.register("EXT-Selfies", {
     var saveIcon = document.getElementById("EXT-SELFIES-SAVE")
     saveIcon.onclick = ()=> {
       this.lastPhoto = result  // Sauvegarde uniquement le selfie en local
+      result.useTBKeyOnly = true // "tag" affiche le resultat uniquement si la commande /selfie est utilisé (EXT-SelfieSender)
+      this.sendNotification("EXT_SELFIES-RESULT", result)
       this.closeDisplayer()
     }
     var retryIcon = document.getElementById("EXT-SELFIES-RETRY")
