@@ -262,7 +262,7 @@ Module.register("EXT-Selfies", {
         break
       case "EXT_SELFIES-LAST":
         if (this.IsShooting || !this.lastPhoto) return
-        this.showLastPhoto(this.lastPhoto, false)
+        this.showLastPhoto(this.lastPhoto, false, true)
         break
     }
   },
@@ -465,8 +465,8 @@ Module.register("EXT-Selfies", {
     }
   },
 
-  showLastPhoto: function(result, sendResult = true) {
-    var autoValidate = result.options.autoValidate
+  showLastPhoto: function(result, sendResult = true, showLastOnly = false) {
+    var autoValidate = showLastOnly ? true : result.options.autoValidate
     this.IsShooting = true
     var con = document.querySelector("#EXT-SELFIES")
     con.classList.add("shown")
@@ -474,6 +474,10 @@ Module.register("EXT-Selfies", {
     rd.style.backgroundImage = `url(modules/EXT-Selfies/photos/${result.uri})`
     rd.classList.add("shown")
     if (autoValidate) {
+      if (this.config.usePreview) {
+        var preview = document.querySelector("#EXT-SELFIES .preview")
+        preview.classList.remove("shown")
+      }
       setTimeout(()=>{
         this.lastPhoto = result
         if (sendResult) this.sendNotification("EXT_SELFIES-RESULT", result)
