@@ -1,6 +1,7 @@
 /********************
 *  EXT-Selfies v1.0 *
 *  Bugsounet        *
+*  venditti69500    *
 *  11/2022          *
 ********************/
 
@@ -8,14 +9,13 @@ Module.register("EXT-Selfies", {
   defaults: {
     debug: false,
     captureWidth:1280,
-    captureHeight:720, // In some webcams, resolution ratio might be fixed so these values might not be applied.
-    device: null, // For default camera. Or, device: "USB Camera" <-- See the backend log to get your installed camera name.
-    // device is only used if preview not used
+    captureHeight:720,
+    device: null,
     usePreview: true,
     previewWidth:640,
     previewHeight:360,
     displayButton: true,
-    buttonStyle: 1, // Set 1, 2, 3, 4 --- can be an array [1,2] for blinking --- 0 for default font-awesome icon (camera)
+    buttonStyle: 0,
     buttons: {
       1: "master.png",
       2: "halloween.png",
@@ -25,8 +25,8 @@ Module.register("EXT-Selfies", {
     blinkButton: false,
     playShutter: true,
     resultDuration: 1000 * 10,
-    autoValidate: false,
-    counterStyle: 0, // 0: default, 1: google, 2: point, 3: move, other will fallback to default (0)
+    autoValidate: true,
+    counterStyle: 0,
     showResult: true
   },
 
