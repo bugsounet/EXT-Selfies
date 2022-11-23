@@ -1,52 +1,32 @@
-#SELFIE {
-  position:absolute;
+#EXT-SELFIES {
+  position:fixed;
   width:100%;
   height:100%;
-  background-color:rgba(0, 0, 0, 0.7);
+  background-color:rgba(0, 0, 0, 0.95);
+  top:0;
+  left:0;
   display:none;
 }
 
-#SELFIE.shown {
+#EXT-SELFIES.shown {
   display:block;
 }
 
-#SELFIE .window {
-  position:absolute;
-  width: 400px;
-  height: 400px;
-  top: calc((100% - 400px) / 2);
-  left: calc((100% - 400px) / 2);
-  box-sizing:border-box;
-  border: 10px solid #FFF;
-  background-color: Black;
-  padding:20px;
-  text-align:center;
-  border-radius: 20px;
+#EXT-SELFIES .preview {
+  z-index: 0;
+  position: absolute;
+  top: 50px;
+  left: 50px;
   display:none;
-  flex-direction:column;
-  justify-content: space-around;
+  border-style: double;
 }
 
-#SELFIE .window.shown {
-  display: flex;
+#EXT-SELFIES .preview.shown {
+  display:block;
 }
 
-#SELFIE .message {
-  font-size: 30px;
-  font-weight:bold;
-  color: #FFF;
-  height:60px;
-}
-
-#SELFIE .count {
-  font-size:240px;
-  font-weight:bold;
-  color:#FFF;
-  height: 240px;
-  line-height:100%;
-}
-
-#SELFIE .result {
+#EXT-SELFIES .result {
+  z-index: 0;
   position: absolute;
   width: 90%;
   height: 90%;
@@ -59,6 +39,67 @@
   display:none;
 }
 
-#SELFIE .result.shown {
+#EXT-SELFIES .result.shown {
   display:block;
+}
+
+#EXT-SELFIES-BUTTON.hidden {
+  display: none;
+}
+
+#EXT-SELFIES-BUTTON {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#EXT-SELFIES-BUTTON.buttonStyle {
+  background-size: 100%;
+  background-repeat: no-repeat;
+  width: 200px;
+  height: 200px;
+}
+
+#EXT-SELFIES-BUTTON.uniqueFlash {
+  opacity: 0;
+  animation: blinkButton normal 2s 1 ease-in;
+}
+
+#EXT-SELFIES-BUTTON.flash {
+  opacity: 0;
+  animation: blinkButton normal 2s infinite ease-in;
+}
+
+@keyframes blinkButton {
+  0% {
+      opacity:0;
+  }
+  50% {
+      opacity:1;
+  }
+  100% {
+      opacity:0;
+  }
+}
+
+#EXT-SELFIES-PANNEL {
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+
+#EXT-SELFIES-PANNEL.shown {
+  display: flex;
+}
+
+#EXT-SELFIES-SEND,
+#EXT-SELFIES-SAVE,
+#EXT-SELFIES-RETRY,
+#EXT-SELFIES-EXIT {
+  background-size: 100%;
+  width: 70px;
+  height: 70px;
+  background-repeat: no-repeat;
+  margin: 10px;
+  z-index: 1;
 }

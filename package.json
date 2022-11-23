@@ -1,23 +1,31 @@
 {
-  "name": "MMM-Selfieshot",
-  "version": "1.0.2",
-  "description": "(Under development)",
-  "main": "MMM-Selfieshot.js",
+  "name": "EXT-Selfies",
+  "version": "1.0.0",
+  "rev": "221123",
+  "description": "take selfies from webcam",
+  "main": "EXT-Selfies.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "preinstall": "installer/preinstall.sh",
+    "postinstall": "installer/postinstall.sh",
+    "update": "installer/update.sh"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/eouia/MMM-Selfieshot.git"
+    "url": "git+https://github.com/bugsounet/EXT-Selfies"
   },
-  "author": "eouia0819@gmail.com",
+  "authors": [
+    "eouia0819@gmail.com",
+    "BrianHepler",
+    "bugsounet",
+    "Venditti-Alex"
+  ],
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/eouia/MMM-Selfieshot/issues"
+    "url": "https://forum.bugsounet.fr"
   },
-  "homepage": "https://github.com/eouia/MMM-Selfieshot#readme",
+  "homepage": "https://wiki.bugsounet.fr",
   "dependencies": {
-    "node-webcam": "^0.5.0",
-    "nodemailer": "^6.4.4"
+    "ba64": "^3.0.9",
+    "node-webcam": "^0.8.1"
   }
 }
