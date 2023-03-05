@@ -248,7 +248,7 @@ Module.register("EXT-Selfies", {
       case "DOM_OBJECTS_CREATED":
         this.prepare()
         break
-      case "GAv4_READY": // send HELLO to Gateway ... (mark plugin as present in GW db)
+      case "GAv5_READY": // send HELLO to Gateway ... (mark plugin as present in GW db)
         if (sender.name == "MMM-GoogleAssistant") this.sendNotification("EXT_HELLO", this.name)
         break
       case "EXT_SELFIES-SHOOT":
