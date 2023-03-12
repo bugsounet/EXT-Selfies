@@ -10,7 +10,7 @@ In addition, you can use others EXT plugin to control it or add some pretty plug
  * `EXT-SelfiesFlash`: For turn on/off automaticaly a flash light
  * `EXT-SelfiesViewer`: For displaying your selfies result on the screen
  * `EXT-Alert`: For display some information or error on your screen (Optional)
- * `Gateway` for full control in harmony with all EXT components (For `MMM-GoogleAssistant` v4.x only)
+ * `Gateway` for full control in harmony with all EXT components (For `MMM-GoogleAssistant` only)
 
 Naturally, you can use this EXT plugin with or without out `MMM-GoogleAssistant` v5.x
 
