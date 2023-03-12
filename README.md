@@ -2,7 +2,7 @@
 
 It will allows to take selfies with a webcam.
 
-This module is an Extented plugins for `MMM-GoogleAssistant` v4.x
+This module is an Extented plugins for `MMM-GoogleAssistant` v5.x
 
 In addition, you can use others EXT plugin to control it or add some pretty plugins:
 
@@ -12,7 +12,7 @@ In addition, you can use others EXT plugin to control it or add some pretty plug
  * `EXT-Alert`: For display some information or error on your screen (Optional)
  * `Gateway` for full control in harmony with all EXT components (For `MMM-GoogleAssistant` v4.x only)
 
-Naturally, you can use this EXT plugin with or without out `MMM-GoogleAssistant` v4.x
+Naturally, you can use this EXT plugin with or without out `MMM-GoogleAssistant` v5.x
 
 ## Installation / update / configuration
 
