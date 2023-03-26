@@ -1,7 +1,7 @@
 /********************
-*  EXT-Selfies v1.0 *
+*  EXT-Selfies v1.1 *
 *  Bugsounet        *
-*  10/2022          *
+*  03/2023          *
 ********************/
 
 const NodeWebcam = require( "node-webcam" );
@@ -24,9 +24,7 @@ module.exports = NodeHelper.create({
   initialize: function(payload) {
     console.log("[SELFIES] EXT-Selfies Version:", require('./package.json').version, "rev:", require('./package.json').rev)
     this.config = payload
-    if (payload.debug) {
-      log = (...args) => { console.log("[SELFIES]", ...args) }
-    }
+    if (payload.debug) log = (...args) => { console.log("[SELFIES]", ...args) }
     if (!this.config.usePreview) {
       var Webcam = NodeWebcam.create({})
       Webcam.list((list)=>{
