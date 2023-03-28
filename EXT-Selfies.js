@@ -1,8 +1,8 @@
 /********************
-*  EXT-Selfies v1.0 *
+*  EXT-Selfies v1.1 *
 *  Bugsounet        *
 *  venditti69500    *
-*  11/2022          *
+*  03/2023          *
 ********************/
 
 Module.register("EXT-Selfies", {
@@ -37,12 +37,11 @@ Module.register("EXT-Selfies", {
   },
 
   getScripts: function() {
-    return [ "/modules/EXT-Selfies/resources/webcam.min.js" ]
+    return [ "/modules/EXT-Selfies/components/webcam.min.js" ]
   },
 
   start: function() {
     this.IsShooting = false
-    this.sendSocketNotification("INIT", this.config)
     this.lastPhoto = null
     /** 0: default
       * 1: google
@@ -108,6 +107,7 @@ Module.register("EXT-Selfies", {
 `
     }
     this.counterStyle = null
+    this.ready = false
     this.resourcesPatch = "/modules/EXT-Selfies/resources/"
     this.logoSelfies = this.resourcesPatch
     this.logo= {
@@ -245,23 +245,25 @@ Module.register("EXT-Selfies", {
 
   notificationReceived: function(noti, payload, sender) {
     switch(noti) {
-      case "DOM_OBJECTS_CREATED":
-        this.prepare()
-        break
-      case "GAv5_READY": // send HELLO to Gateway ... (mark plugin as present in GW db)
-        if (sender.name == "MMM-GoogleAssistant") this.sendNotification("EXT_HELLO", this.name)
+      case "GW_READY":
+        if (sender.name == "Gateway") {
+          this.sendSocketNotification("INIT", this.config)
+          this.prepare()
+          this.ready = true
+          this.sendNotification("EXT_HELLO", this.name)
+        }
         break
       case "EXT_SELFIES-SHOOT":
-        if (this.IsShooting) return
+        if (this.IsShooting || !this.ready) return
         this.shoot(payload)
         break
       case "EXT_SELFIES-EMPTY_STORE":
-        if (this.IsShooting) return
+        if (this.IsShooting || !this.ready) return
         this.sendSocketNotification("EMPTY")
         this.lastPhoto = null
         break
       case "EXT_SELFIES-LAST":
-        if (this.IsShooting || !this.lastPhoto) return
+        if (this.IsShooting || !this.lastPhoto || !this.ready) return
         this.showLastPhoto(this.lastPhoto, false, true)
         break
     }
