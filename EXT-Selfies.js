@@ -347,7 +347,7 @@ Module.register("EXT-Selfies", {
           animatedCounter.addEventListener("animationend" , (event) => {
             event.stopPropagation()
             this.takeShootWithPreview(options)
-          }, {once: true})
+          })
         } else if (this.config.counterStyle == 2) {
           this.countDownForStyle2(5).then(() => {
             this.takeShootWithPreview(options)
