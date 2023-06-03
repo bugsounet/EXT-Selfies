@@ -344,7 +344,8 @@ Module.register("EXT-Selfies", {
         animate.classList.add("shown")
         if (this.config.counterStyle == 1) {
           animatedCounter.classList.add("google")
-          animatedCounter.addEventListener("animationend" , () => {
+          animatedCounter.addEventListener("animationend" , (event) => {
+            event.stopPropagation()
             this.takeShootWithPreview(options)
           }, {once: true})
         } else if (this.config.counterStyle == 2) {
