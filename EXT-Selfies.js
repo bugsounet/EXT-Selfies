@@ -1,9 +1,9 @@
-/********************
-*  EXT-Selfies v1.1 *
-*  Bugsounet        *
-*  venditti69500    *
-*  03/2023          *
-********************/
+/**********************
+*  EXT-Selfies v1.2.0 *
+*  Bugsounet          *
+*  venditti69500      *
+*  06/2023            *
+**********************/
 
 Module.register("EXT-Selfies", {
   defaults: {
@@ -37,7 +37,7 @@ Module.register("EXT-Selfies", {
   },
 
   getScripts: function() {
-    return [ "/modules/EXT-Selfies/components/webcam.min.js" ]
+    return [ "/modules/EXT-Selfies/components/webcam.js" ]
   },
 
   start: function() {
@@ -50,61 +50,10 @@ Module.register("EXT-Selfies", {
      **/
 
     this.counterStyleHTML = {
-      0: `
-    <div class="message">Smiles!</div>
-    <div class="count">5</div>
-`,
-
-      1: `
-  <div class="google__colored-blocks">
-    <div class="google__colored-blocks-rotater">
-      <div class="google__colored-block"></div>
-      <div class="google__colored-block"></div>
-      <div class="google__colored-block"></div>
-      <div class="google__colored-block"></div>
-    </div>
-    <div class="google__colored-blocks-inner"></div>
-    <div class="google__text">Smiles!</div>
-  </div>
-  <div class="google__inner">
-    <svg class="google__numbers" viewBox="0 0 100 100">
-      <defs>
-        <path class="google__num-path-1" d="M40,28 55,22 55,78"/>
-        <path class="google__num-join-1-2" d="M55,78 55,83 a17,17 0 1,0 34,0 a20,10 0 0,0 -20,-10"/>
-        <path class="google__num-path-2" d="M69,73 l-35,0 l30,-30 a16,16 0 0,0 -22.6,-22.6 l-7,7"/>
-        <path class="google__num-join-2-3" d="M28,69 Q25,44 34.4,27.4"/>
-        <path class="google__num-path-3" d="M30,20 60,20 40,50 a18,15 0 1,1 -12,19"/>
-      </defs>
-      <path class="google__numbers-path" 
-            d="M-10,20 60,20 40,50 a18,15 0 1,1 -12,19 
-               Q25,44 34.4,27.4
-               l7,-7 a16,16 0 0,1 22.6,22.6 l-30,30 l35,0 L69,73 
-               a20,10 0 0,1 20,10 a17,17 0 0,1 -34,0 L55,83 
-               l0,-61 L40,28" />
-    </svg>
-  </div>
-`,
-
-      2: `
-  <div class="c"></div>
-  <div class="o"></div>
-  <div class="u"></div>
-  <div class="n"></div>
-  <div class="t"></div>
-<svg>
-  <defs>
-    <filter id="filter">
-      <feGaussianBlur in="SourceGraphic" stdDeviation="18" result="blur" />
-      <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 28 -10" result="filter" />
-      <feComposite in="SourceGraphic" in2="filter" operator="atop" />
-    </filter>
-  </defs>
-</svg>
-`,
-
-      3: `
-  <div></div>
-`
+      0: `<div class="message">Smiles!</div><div class="count">5</div>`,
+      1: `<div class="google__colored-blocks"><div class="google__colored-blocks-rotater"><div class="google__colored-block"></div><div class="google__colored-block"></div><div class="google__colored-block"></div><div class="google__colored-block"></div></div><div class="google__colored-blocks-inner"></div><div class="google__text">Smiles!</div></div><div class="google__inner"><svg class="google__numbers" viewBox="0 0 100 100"><defs><path class="google__num-path-1" d="M40,28 55,22 55,78"/><path class="google__num-join-1-2" d="M55,78 55,83 a17,17 0 1,0 34,0 a20,10 0 0,0 -20,-10"/><path class="google__num-path-2" d="M69,73 l-35,0 l30,-30 a16,16 0 0,0 -22.6,-22.6 l-7,7"/><path class="google__num-join-2-3" d="M28,69 Q25,44 34.4,27.4"/><path class="google__num-path-3" d="M30,20 60,20 40,50 a18,15 0 1,1 -12,19"/></defs><path class="google__numbers-path" d="M-10,20 60,20 40,50 a18,15 0 1,1 -12,19 Q25,44 34.4,27.4 l7,-7 a16,16 0 0,1 22.6,22.6 l-30,30 l35,0 L69,73 a20,10 0 0,1 20,10 a17,17 0 0,1 -34,0 L55,83 l0,-61 L40,28" /></svg></div>`,
+      2: `<div class="c"></div><div class="o"></div><div class="u"></div><div class="n"></div><div class="t"></div><svg><defs><filter id="filter"><feGaussianBlur in="SourceGraphic" stdDeviation="18" result="blur" /><feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 28 -10" result="filter" /><feComposite in="SourceGraphic" in2="filter" operator="atop" /></filter></defs></svg>`,
+      3: `<div></div>`
     }
     this.counterStyle = null
     this.ready = false
@@ -116,6 +65,7 @@ Module.register("EXT-Selfies", {
       Exit: this.resourcesPatch + "exit.png",
       Retry: this.resourcesPatch + "retry.png",
     }
+    this.ShootOptions = {}
     if (this.config.buttonStyle && this.config.buttons[this.config.buttonStyle]) { // if buttonStyle is a number
       this.logoSelfies += this.config.buttons[this.config.buttonStyle]
     } else if (Array.isArray(this.config.buttonStyle) && this.config.buttons[this.config.buttonStyle[0]]) { // buttonStyle is an array [1,2,3] and verify the first number of the array
@@ -128,6 +78,8 @@ Module.register("EXT-Selfies", {
 
   getDom: function() {
     var wrapper = document.createElement("div")
+    wrapper.id = "EXT-SELFIES-Wrapper"
+    wrapper.classList.add("hidden")
     if (this.config.displayButton) {
       var icon // define icon as var
       if (this.config.buttonStyle) { // buttonStyle > 1
@@ -160,13 +112,20 @@ Module.register("EXT-Selfies", {
         icon.classList.add("large")
         if (this.config.blinkButton) icon.classList.add("flash") // active le flash sur le button unique ?
       }
-      icon.addEventListener("click", () => this.shoot())
+      icon.addEventListener("click", (event) => {
+        event.stopPropagation()
+        this.shoot()
+      })
       wrapper.appendChild(icon)
-    } else wrapper.style.display = 'none'
+    }
     return wrapper
   },
 
   prepare: function() {
+    if (this.config.displayButton) {
+      var wrapper = document.getElementById("EXT-SELFIES-Wrapper")
+      wrapper.classList.remove("hidden")
+    }
     /** popup main code **/
     var dom = document.createElement("div")
     dom.id = "EXT-SELFIES"
@@ -181,6 +140,18 @@ Module.register("EXT-Selfies", {
     var animatedCounter = document.createElement("div")
     animatedCounter.id = "EXT-SELFIES-COUNTER"
     animatedCounter.innerHTML = this.counterStyle
+
+    animatedCounter.addEventListener("animationend" , (event) => {
+      event.stopPropagation()
+      if (event.animationName == "googleAnim" || event.animationName == "moveScaling") {
+        this.takeShoot(this.ShootOptions)
+      }
+      if (event.animationName == "moveScaling") {
+        animate.classList.remove("move")
+        animatedCounter.classList.remove("dot")
+      }
+    })
+
     animate.appendChild(animatedCounter)
 
     var shutter = document.createElement("audio")
@@ -277,6 +248,7 @@ Module.register("EXT-Selfies", {
       TBkey: options.TBkey || null,
       useTBKeyOnly: options.useTBKeyOnly || false
     }
+    this.ShootOptions = options
     this.sendNotification("EXT_SELFIES-START")
     this.IsShooting = true
     var con = document.querySelector("#EXT-SELFIES")
@@ -287,7 +259,7 @@ Module.register("EXT-Selfies", {
     con.classList.add("shown")
 
     if (this.config.usePreview) this.initShootWithPreview(options,retry)
-    else this.initShootWithNoPreview(options)
+    else this.initShoot(options)
   },
 
   initShootWithPreview: function (options, retry) {
@@ -297,7 +269,7 @@ Module.register("EXT-Selfies", {
         height: this.config.previewHeight,
         image_format: 'jpeg',
         jpeg_quality: 100,
-        flip_horiz: true,
+        flip_horiz: false,
         dest_width: this.config.captureWidth,
         dest_height: this.config.captureHeight,
         webcamSet: true
@@ -308,120 +280,55 @@ Module.register("EXT-Selfies", {
       })
       console.log("[SELFIES] Init camera params")
     }
-    var animate = document.getElementById("EXT-SELFIES-ANIMATE")
-    var animatedCounter = document.getElementById("EXT-SELFIES-COUNTER")
     var preview = document.querySelector("#EXT-SELFIES .preview")
-    if (retry) { // need to retry the shoot ? (don't re-init camera)
-      this.sendNotification("EXT_SELFIESFLASH-ON")
-      animate.classList.add("shown")
-      if (this.config.counterStyle == 1) {
-        animatedCounter.addEventListener("animationend" , () => {
-          this.takeShootWithPreview(options)
-        }, {once: true}) // don't duplicate EventListener !
-      } else if (this.config.counterStyle == 2) {
-        this.countDownForStyle2(5).then(() => {
-          this.takeShootWithPreview(options)
-        })
-      } else if (this.config.counterStyle == 3) {
-        animate.classList.add("move")
-        animatedCounter.classList.add("dot")
-        animatedCounter.addEventListener("animationend" , () => {
-          this.takeShootWithPreview(options)
-          animate.classList.remove("move")
-          animatedCounter.classList.remove("dot")
-        }, {once: true})
-      } else { // fallback to default
-        this.countDownForStyle0(5).then(() => {
-          this.takeShootWithPreview(options)
-        })
-      }
-
-    } else { // take the shoot
+    if (retry) this.initShoot(options)
+    else {
       preview.classList.add("shown")
       Webcam.attach(preview)
       Webcam.on('load', () => {
-        this.sendNotification("EXT_SELFIESFLASH-ON")
-        animate.classList.add("shown")
-        if (this.config.counterStyle == 1) {
-          animatedCounter.classList.add("google")
-          animatedCounter.addEventListener("animationend" , (event) => {
-            event.stopPropagation()
-            this.takeShootWithPreview(options)
-          })
-        } else if (this.config.counterStyle == 2) {
-          this.countDownForStyle2(5).then(() => {
-            this.takeShootWithPreview(options)
-          })
-        } else if (this.config.counterStyle == 3) {
-          animate.classList.add("move")
-          animatedCounter.classList.add("dot")
-          animatedCounter.addEventListener("animationend" , () => {
-            this.takeShootWithPreview(options)
-            animate.classList.remove("move")
-            animatedCounter.classList.remove("dot")
-          }, {once: true})
-        } else { // fallback to default
-          this.countDownForStyle0(5).then(() => {
-            this.takeShootWithPreview(options)
-          })
-        }
+        this.initShoot(options)
       })
     }
   },
 
-  initShootWithNoPreview: function (options) {
+  initShoot: function(options) {
     var animate = document.getElementById("EXT-SELFIES-ANIMATE")
     var animatedCounter = document.getElementById("EXT-SELFIES-COUNTER")
-    animate.classList.add("shown")
     this.sendNotification("EXT_SELFIESFLASH-ON")
+    animate.classList.add("shown")
     if (this.config.counterStyle == 1) {
       animatedCounter.classList.add("google")
-      animatedCounter.addEventListener("animationend" , () => {
-        this.takeShootWithNoPreview(options)
-      }, {once: true})
-    } else if (this.config.counterStyle == 2) {
-      this.countDownForStyle2(5).then(() => {
-        this.takeShootWithNoPreview(options)
-      })
+    }
+    else if (this.config.counterStyle == 2) {
+      this.countDownForStyle2(5).then(() => this.takeShoot(options))
     } else if (this.config.counterStyle == 3) {
       animate.classList.add("move")
       animatedCounter.classList.add("dot")
-      animatedCounter.addEventListener("animationend" , () => {
-        this.takeShootWithNoPreview(options)
-        animate.classList.remove("move")
-        animatedCounter.classList.remove("dot")
-      }, {once: true})
     } else { // fallback to default
-      this.countDownForStyle0(5).then(() => {
-        this.takeShootWithNoPreview(options)
-      })
+      this.countDownForStyle0(5).then(() => this.takeShoot(options))
     }
   },
 
-  takeShootWithPreview: function (options) {
+  takeShoot: function (options) {
     var sound = options.playShutter
     var animate = document.getElementById("EXT-SELFIES-ANIMATE")
     var shutter = document.querySelector("#EXT-SELFIES .shutter")
     if (sound) shutter.play()
-    Webcam.snap(data_uri => {
-      this.sendNotification("EXT_SELFIESFLASH-OFF")
-      this.sendSocketNotification("SAVE", {
-        data: data_uri,
+    if (this.config.usePreview) {
+      Webcam.snap(data_uri => {
+        this.sendNotification("EXT_SELFIESFLASH-OFF")
+        this.sendSocketNotification("SAVE", {
+          data: data_uri,
+          options: options
+        })
+        animate.classList.remove("shown")
+      })
+    } else {
+      this.sendSocketNotification("SHOOT", {
         options: options
       })
       animate.classList.remove("shown")
-    })
-  },
-
-  takeShootWithNoPreview: function (options) {
-    var sound = options.playShutter
-    var animate = document.getElementById("EXT-SELFIES-ANIMATE")
-    var shutter = document.querySelector("#EXT-SELFIES .shutter")
-    if (sound) shutter.play()
-    this.sendSocketNotification("SHOOT", {
-      options: options
-    })
-    animate.classList.remove("shown")
+    }
   },
 
   countDownForStyle2: function (count) { // style 2 main
@@ -436,7 +343,7 @@ Module.register("EXT-Selfies", {
             count--
             this.countDownForStyle2(count).then(resolve)
           }, 1000)
-        }, 600)
+        }, 700)
       }
     })
   },

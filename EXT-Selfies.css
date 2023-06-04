@@ -43,6 +43,7 @@
   display:block;
 }
 
+#EXT-SELFIES-Wrapper.hidden,
 #EXT-SELFIES-BUTTON.hidden {
   display: none;
 }
