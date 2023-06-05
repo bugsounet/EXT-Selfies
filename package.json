@@ -1,7 +1,7 @@
 {
   "name": "EXT-Selfies",
-  "version": "1.1.0",
-  "rev": "230326",
+  "version": "1.2.0",
+  "rev": "230605",
   "description": "take selfies from webcam",
   "main": "EXT-Selfies.js",
   "scripts": {
@@ -31,6 +31,6 @@
     "check-node-version": "^4.2.1",
     "glob": "^9.3.2",
     "minify": "^9.2.0",
-    "node-webcam": "^0.8.1"
+    "node-webcam": "^0.8.2"
   }
 }
