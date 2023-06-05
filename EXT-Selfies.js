@@ -188,6 +188,27 @@ Module.register("EXT-Selfies", {
     dom.appendChild(result)
 
     document.body.appendChild(dom)
+
+    // prepare webcam
+    if (this.config.usePreview) {
+      Webcam.set({ // set options
+        width: this.config.previewWidth,
+        height: this.config.previewHeight,
+        image_format: 'jpeg',
+        jpeg_quality: 100,
+        flip_horiz: false,
+        dest_width: this.config.captureWidth,
+        dest_height: this.config.captureHeight,
+        webcamSet: true
+      })
+      Webcam.on("error", error => {
+        console.log("[SELFIES] Could not access webcam:", error)
+        this.socketNotificationReceived("ERROR", "Could not access webcam: " + error)
+      })
+
+      Webcam.on('load', () => this.initShoot(this.ShootOptions))
+      console.log("[SELFIES] Init camera params")
+    }
   },
 
   socketNotificationReceived: function(noti, payload) {
@@ -263,31 +284,11 @@ Module.register("EXT-Selfies", {
   },
 
   initShootWithPreview: function (options, retry) {
-    if (!Webcam.params.webcamSet) {
-      Webcam.set({ // set options
-        width: this.config.previewWidth,
-        height: this.config.previewHeight,
-        image_format: 'jpeg',
-        jpeg_quality: 100,
-        flip_horiz: false,
-        dest_width: this.config.captureWidth,
-        dest_height: this.config.captureHeight,
-        webcamSet: true
-      })
-      Webcam.on("error", error => {
-        console.log("[SELFIES] Could not access webcam:", error)
-        this.socketNotificationReceived("ERROR", "Could not access webcam: " + error)
-      })
-      console.log("[SELFIES] Init camera params")
-    }
     var preview = document.querySelector("#EXT-SELFIES .preview")
     if (retry) this.initShoot(options)
     else {
       preview.classList.add("shown")
       Webcam.attach(preview)
-      Webcam.on('load', () => {
-        this.initShoot(options)
-      })
     }
   },
 
