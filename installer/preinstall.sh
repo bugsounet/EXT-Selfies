@@ -8,7 +8,7 @@ dependencies=
 while getopts ":d:" option; do
   case $option in
     d) # -d option for install dependencies
-       dependencies=$OPTARG;;
+       dependencies=($OPTARG);;
   esac
 done
 
