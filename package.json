@@ -1,7 +1,7 @@
 {
   "name": "EXT-Selfies",
-  "version": "1.2.1",
-  "rev": "230723",
+  "version": "1.2.2",
+  "rev": "231001",
   "description": "take selfies from webcam",
   "main": "EXT-Selfies.js",
   "scripts": {
@@ -28,8 +28,8 @@
   "homepage": "https://wiki.bugsounet.fr",
   "dependencies": {
     "ba64": "^3.0.9",
-    "esbuild": "^0.18.16",
-    "glob": "^10.3.3",
+    "esbuild": "^0.19.4",
+    "glob": "^10.3.10",
     "node-webcam": "^0.8.2"
   }
 }
