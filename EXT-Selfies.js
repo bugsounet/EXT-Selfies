@@ -133,7 +133,7 @@ Module.register("EXT-Selfies", {
     var preview = document.createElement("div")
     preview.classList.add("preview")
     dom.appendChild(preview)
-    
+
     var animate = document.createElement("div")
     animate.id = "EXT-SELFIES-ANIMATE"
     dom.appendChild(animate)
@@ -237,8 +237,8 @@ Module.register("EXT-Selfies", {
 
   notificationReceived: function(noti, payload, sender) {
     switch(noti) {
-      case "GW_READY":
-        if (sender.name == "Gateway") {
+      case "GA_READY":
+        if (sender.name == "MMM-GoogleAssistant") {
           this.sendSocketNotification("INIT", this.config)
           this.prepare()
           this.ready = true
