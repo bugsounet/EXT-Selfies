@@ -1,12 +1,12 @@
 {
   "name": "EXT-Selfies",
-  "version": "1.4.0",
-  "rev": "240308",
+  "version": "1.5.0",
+  "rev": "240701",
   "description": "take selfies from webcam",
   "main": "EXT-Selfies.js",
   "scripts": {
     "preinstall": "installer/preinstall.sh -d 'fswebcam'",
-    "postinstall": "installer/postinstall.sh -m -b",
+    "postinstall": "installer/postinstall.sh -m",
     "update": "installer/update.sh",
     "reset": "git reset --hard",
     "clean": "rm -rf node_modules package-lock.json",
@@ -33,9 +33,12 @@
   ],
   "license": "MIT",
   "bugs": {
-    "url": "https://forum.bugsounet.fr"
+    "url": "https://github.com/bugsounet/EXT-Selfies/issues"
   },
   "homepage": "https://wiki.bugsounet.fr",
+  "engines": {
+    "node": ">=20"
+  },
   "dependencies": {
     "ba64": "^3.0.9",
     "esbuild": "^0.21.5",
@@ -44,7 +47,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^8.57.0",
-    "@stylistic/eslint-plugin": "^2.1.0",
+    "@stylistic/eslint-plugin": "^1.8.1",
     "eslint": "^8.57.0",
     "eslint-plugin-import": "^2.29.1"
   }

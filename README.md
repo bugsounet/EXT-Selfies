@@ -15,9 +15,6 @@ In addition, you can use others EXT plugin to control it or add some pretty plug
 ## Installation / update / configuration
 
 Read the docs in [wiki](https://wiki.bugsounet.fr/EXT-Selfies)
-
-## Support and Helping
-New forum and support for all @bugsounet modules is now localized [there](https://forum.bugsounet.fr) !
  
 ## Donate
  [Donate](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=TTHRH94Y4KL36&source=url), if you love this module !
