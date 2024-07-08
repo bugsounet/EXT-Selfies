@@ -41,7 +41,7 @@
   },
   "dependencies": {
     "ba64": "^3.0.9",
-    "esbuild": "^0.22.0",
+    "esbuild": "^0.23.0",
     "glob": "^10.4.3",
     "node-webcam": "^0.8.2"
   },
